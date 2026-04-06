@@ -389,7 +389,9 @@ const DATA = [{"id": 1, "cerd": 672, "name": "Father Semaan Doueihy School", "wf
 
 let activeFilters = {};
 
-function goToSchools(filters) {
+var _filters = [];
+function goToSchools(idx) {
+  var filters = typeof idx === 'number' ? (_filters[idx]||{}) : idx;
   activeFilters = {};
   document.querySelectorAll('.btn[data-filter]').forEach(function(b){
     b.classList.remove('active','green-btn','amber-btn','red-btn','purple-btn','teal-btn');
@@ -831,7 +833,7 @@ function renderOverview() {
       +'<div style="width:3px;height:32px;border-radius:2px;background:'+r.col+';flex-shrink:0"></div>'
       +'<div><div style="font-size:12px;color:'+TX+'">'+r.label+'</div>'
       +'<div style="font-size:10px;color:'+MU+';margin-top:2px">'+(r.label==='Out of program'?(r.count+' not activated'):r.y+' activated &middot; '+(r.count-r.y)+' not yet activated')+'</div></div></div>'
-      +'<div style="font-family:var(--mono);font-size:18px;color:'+TX+';cursor:pointer;border-bottom:1px dashed rgba(255,255,255,0.25)" onclick="goToSchools('+JSON.stringify(r.f||{})+')" title="View in Schools tab">'+r.count+'</div></div>';
+      +(function(){var idx=_filters.push(r.f||{})-1;return '<div style="font-family:var(--mono);font-size:18px;color:'+TX+';cursor:pointer;border-bottom:1px dashed rgba(255,255,255,0.25)" onclick="goToSchools('+idx+')" title="View in Schools tab">'+r.count+'</div></div>';})();
   });
   hostHtml+='</div>';
   html+=hostHtml;
@@ -854,7 +856,7 @@ function renderOverview() {
     rightCol+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">'
       +'<div style="width:120px;flex-shrink:0;font-size:11px;color:'+MU+'">'+r.label+'</div>'
       +minibar(r.val,total,r.col)
-      +'<div style="font-family:var(--mono);font-size:11px;color:'+TX+';min-width:24px;text-align:right;cursor:pointer;border-bottom:1px dashed rgba(255,255,255,0.25)" onclick="goToSchools('+JSON.stringify(r.f||{})+')" title="View in Schools tab">'+r.val+'</div></div>';
+      +(function(){var idx=_filters.push(r.f||{})-1;return '<div style="font-family:var(--mono);font-size:11px;color:'+TX+';min-width:24px;text-align:right;cursor:pointer;border-bottom:1px dashed rgba(255,255,255,0.25)" onclick="goToSchools('+idx+')" title="View in Schools tab">'+r.val+'</div></div>';})();
   });
   rightCol+='</div>';
 
