@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>School Snacks Re-Kickoff — DCL</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2333;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e8eaf0;
+    --muted: #7a8099;
+    --accent: #4e9eff;
+    --green: #2ecc8a;
+    --red: #ff5f5f;
+    --amber: #f5a623;
+    --purple: #a78bfa;
+    --teal: #22d3ee;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--bg); }
+  body { font-family: var(--sans); color: var(--text); background: var(--bg); min-height: 100vh; }
+
+  /* HEADER */
+  .header { padding: 28px 32px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .header-left h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text); }
+  .header-left p { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-top: 3px; }
+  .badge { font-family: var(--mono); font-size: 11px; background: rgba(78,158,255,0.12); color: var(--accent); padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(78,158,255,0.25); }
+
+  /* METRICS */
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; border-bottom: 1px solid var(--border); background: var(--border); }
+  .metric { background: var(--surface); padding: 20px 24px; cursor: default; transition: background 0.15s; }
+  .metric:hover { background: var(--surface2); }
+  .metric-label { font-size: 10px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
+  .metric-value { font-size: 28px; font-weight: 300; color: var(--text); font-family: var(--mono); }
+  .metric-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .metric-value.green { color: var(--green); }
+  .metric-value.amber { color: var(--amber); }
+  .metric-value.red { color: var(--red); }
+
+  /* TABS */
+  .prog-switcher { display: flex; gap: 0; padding: 16px 32px 0; background: var(--bg); border-bottom: 2px solid var(--border); }
+  .prog-btn { font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: 0.06em; padding: 10px 22px; color: var(--muted); background: none; border: none; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: color 0.15s, border-color 0.15s; text-transform: uppercase; }
+  .prog-btn:hover { color: var(--text); }
+  .prog-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .prog-btn[data-prog="ck"].active { color: #22d3ee; border-bottom-color: #22d3ee; }
+  .tab-nav { display: flex; gap: 0; border-bottom: 1px solid var(--border); padding: 0 32px; background: var(--surface); }
+  .tab-btn { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; padding: 13px 20px; color: var(--muted); background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.15s, border-color 0.15s; }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* OVERVIEW TAB */
+  .overview { padding: 28px 32px; }
+  .ov-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .ov-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+  .ov-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 18px 20px; }
+  .ov-card-title { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); margin-bottom: 14px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; font-size: 12px; }
+  .bar-row:last-child { margin-bottom: 0; }
+  .bar-label { width: 130px; flex-shrink: 0; color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-track { flex: 1; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+  .bar-val { font-family: var(--mono); font-size: 11px; color: var(--text); min-width: 28px; text-align: right; }
+  .donut-wrap { display: flex; align-items: center; gap: 20px; }
+  .donut-legend { flex: 1; }
+  .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 11px; }
+  .legend-item:last-child { margin-bottom: 0; }
+  .legend-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+  .legend-name { color: var(--muted); flex: 1; }
+  .legend-count { font-family: var(--mono); color: var(--text); }
+  .legend-pct { font-family: var(--mono); color: var(--muted); font-size: 10px; margin-left: 4px; }
+  .stat-row { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row-label { font-size: 12px; color: var(--muted); }
+  .stat-row-val { font-family: var(--mono); font-size: 13px; color: var(--text); }
+  .stat-row-val.green { color: var(--green); }
+  .stat-row-val.red { color: var(--red); }
+  .stat-row-val.amber { color: var(--amber); }
+  .callout { background: rgba(78,158,255,0.07); border: 1px solid rgba(78,158,255,0.18); border-radius: 6px; padding: 12px 16px; margin-bottom: 16px; font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .callout strong { color: var(--accent); font-weight: 500; }
+  .progress-big { margin: 10px 0 4px; }
+  .progress-big-track { height: 10px; background: rgba(255,255,255,0.06); border-radius: 5px; overflow: hidden; margin-bottom: 6px; }
+  .progress-big-fill { height: 100%; border-radius: 5px; }
+  .progress-labels { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .hosting-node { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .hosting-node:last-child { border-bottom: none; }
+  .hosting-node-left { display: flex; align-items: center; gap: 10px; }
+  .hosting-node-color { width: 3px; height: 32px; border-radius: 2px; flex-shrink: 0; }
+  .hosting-node-name { font-size: 12px; color: var(--text); }
+  .hosting-node-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .hosting-node-count { font-family: var(--mono); font-size: 18px; color: var(--text); }
+
+  /* FILTER BUTTONS */
+  .filter-section { padding: 20px 32px 0; }
+  .filter-label { font-size: 10px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 10px; }
+  .filter-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .btn { font-family: var(--mono); font-size: 11px; padding: 6px 14px; border-radius: 4px; border: 1px solid var(--border2); background: var(--surface); color: var(--muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); background: var(--surface2); }
+  .btn.active { background: rgba(78,158,255,0.15); border-color: rgba(78,158,255,0.5); color: var(--accent); }
+  .btn.active.green-btn { background: rgba(46,204,138,0.12); border-color: rgba(46,204,138,0.4); color: var(--green); }
+  .btn.active.amber-btn { background: rgba(245,166,35,0.12); border-color: rgba(245,166,35,0.4); color: var(--amber); }
+  .btn.active.red-btn { background: rgba(255,95,95,0.12); border-color: rgba(255,95,95,0.4); color: var(--red); }
+  .btn.active.purple-btn { background: rgba(167,139,250,0.12); border-color: rgba(167,139,250,0.4); color: var(--purple); }
+  .btn.active.teal-btn { background: rgba(34,211,238,0.12); border-color: rgba(34,211,238,0.4); color: var(--teal); }
+  .btn.clear-btn { border-color: transparent; color: var(--muted); }
+  .btn.clear-btn:hover { color: var(--red); border-color: rgba(255,95,95,0.3); background: rgba(255,95,95,0.06); }
+
+  .search-row { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
+  .search-box { font-family: var(--mono); font-size: 12px; background: var(--surface); border: 1px solid var(--border2); color: var(--text); padding: 7px 12px; border-radius: 4px; width: 280px; outline: none; transition: border 0.15s; }
+  .search-box:focus { border-color: rgba(78,158,255,0.4); }
+  .search-box::placeholder { color: var(--muted); }
+  .result-count { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+  /* TABLE */
+  .table-wrap { padding: 0 32px 32px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead tr { border-bottom: 1px solid var(--border2); }
+  th { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 10px 12px; text-align: left; cursor: pointer; white-space: nowrap; user-select: none; }
+  th:hover { color: var(--text); }
+  th .sort-arrow { opacity: 0.3; margin-left: 4px; }
+  th.sorted .sort-arrow { opacity: 1; color: var(--accent); }
+  tbody tr { border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; }
+  tbody tr:hover { background: var(--surface2); }
+  td { padding: 10px 12px; vertical-align: middle; color: var(--text); }
+  td.school-name { font-weight: 500; font-size: 12px; max-width: 220px; }
+  td.cerd { font-family: var(--mono); color: var(--muted); font-size: 11px; }
+
+  /* TAGS */
+  .tag { display: inline-block; font-family: var(--mono); font-size: 10px; padding: 2px 7px; border-radius: 3px; white-space: nowrap; }
+  .tag-wfp { background: rgba(78,158,255,0.12); color: var(--accent); border: 1px solid rgba(78,158,255,0.2); }
+  .tag-notwfp { background: rgba(167,139,250,0.12); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+  .tag-notjoined { background: rgba(255,95,95,0.10); color: var(--red); border: 1px solid rgba(255,95,95,0.2); }
+  .tag-host { background: rgba(34,211,238,0.10); color: var(--teal); border: 1px solid rgba(34,211,238,0.2); }
+  .tag-guest { background: rgba(245,166,35,0.10); color: var(--amber); border: 1px solid rgba(245,166,35,0.2); }
+  .tag-neither { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border); }
+  .tag-online { background: rgba(167,139,250,0.10); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+  .tag-snack { background: rgba(46,204,138,0.10); color: var(--green); border: 1px solid rgba(46,204,138,0.2); }
+  .tag-kitchen { background: rgba(245,166,35,0.10); color: var(--amber); border: 1px solid rgba(245,166,35,0.2); }
+  .tag-unknown { background: rgba(255,255,255,0.04); color: var(--muted); border: 1px solid var(--border); }
+
+  .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; }
+  .dot-y { background: var(--green); }
+  .dot-n { background: var(--red); }
+  .dot-dash { background: var(--muted); }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 8px; width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; animation: modalIn 0.18s ease; }
+  @keyframes modalIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .modal-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .modal-cerd { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .modal-close { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; line-height: 1; padding: 2px; flex-shrink: 0; }
+  .modal-close:hover { color: var(--text); }
+  .modal-body { padding: 20px 24px; }
+  .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+  .modal-field { }
+  .modal-field-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 5px; }
+  .modal-field-value { font-size: 13px; color: var(--text); }
+  .modal-divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+  .modal-comment { font-size: 12px; color: var(--muted); line-height: 1.65; background: var(--bg); padding: 12px 14px; border-radius: 4px; border: 1px solid var(--border); }
+  .modal-comment.empty { color: var(--muted); opacity: 0.5; font-style: italic; }
+  .students-row { display: flex; gap: 20px; }
+  .student-stat { text-align: center; }
+  .student-stat-num { font-family: var(--mono); font-size: 22px; font-weight: 400; color: var(--text); }
+  .student-stat-label { font-size: 10px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-top: 2px; }
+
+  /* NO RESULTS */
+  .no-results { text-align: center; padding: 60px 20px; color: var(--muted); font-family: var(--mono); font-size: 13px; }
+
+  /* SCROLL */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  @media (max-width: 700px) {
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .header { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .filter-section, .table-wrap { padding-left: 16px; padding-right: 16px; }
+    .modal-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left" style="display:flex;align-items:center;gap:14px">
+    <img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCARGBGUDASIAAhEBAxEB/8QAHQABAAICAwEBAAAAAAAAAAAAAAcIBQYCAwQBCf/EAFoQAQABAwIBBwcGCwUECAMHBQABAgMEBREGBxIhMUFRYQgTFCJxgaEyQlKRscEVIzZicnSCkqKy0RYkM0PhU3PC8Bg0VWOTs8PSF9PxJSZWdZSVoyc3RGWD/8QAHAEBAAIDAQEBAAAAAAAAAAAAAAUGAwQHAgEI/8QARBEBAAEDAQMIBwYEBQQCAwEAAAECAwQRBSExBhITQVFhcdEiMoGRobHBBxQzQuHwI1JywhU1RILxNENioiSSF1Nk4v/aAAwDAQACEQMRAD8ApkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADuw8XJzcinGw8a9k3q+im3aomuqr2RHScB0iROG+RPlQ17m1YvCWbjWqunzmdzcaIjv2uTFU+6JSPw/wCSfxRkxTVrnEulafTPTNONbryKo8J35kb+yZad3aGNa9auPn8mzRh37nq0yroLm6B5K/AuHza9W1XWdUuR10xcos2591NM1fxN80TkW5LdIiPRuDNNvTHbmRVk7/8AizVDQubexqfViZbdGyb9XGYh+fFq3cu3It2qKq656qaY3mfc2bSuTvj3VebOBwbr1+mroiuMC5FH70xt8X6LaZpWmaXb83pum4eFR9HHsU24+qmIexp18oavyUe+WzTsaPzV/BQnS/J85WM7m1TwzGJRPzsnMs0bfs86avg2bTvJX5Qr9MVZWp8PYcbfJqyLldUfu29viugNWrb2VPDSPY2Kdk2I46yqhheSRqFf/XeOMWz/ALnTqrn23KWcw/JK0Knb0zjDUr3T0+axaLfR75qWTGvVtfMq/P8ACPJljZ2NH5fjKAsXyU+AKObORrPEl6qJ3mIv2aaZju281v8AFkcfyYuTG1zufTrV/fq5+bEbfu0wmwYp2llT/wByWSMLHj8kIfseTbyU26ObXpOdenf5VefdifhMQ5/9HHkn/wCwsr/9wvf+5Lo8/f8AJ/8A2T75evulj+SPciL/AKOPJP8A9hZX/wC4Xv8A3PlXk48lHNnm6HkxPZM596Y/mS8Pk52TP/cn3y+xi2InXmR7oQXqHk4cC296sXRpu091Obepq+qa5+1q2o8gfBHOqtTY1XCr7qMnpj9+JWdefNw8bNtebybVNcdk9seyWKcvLjfTdq98tq3Ri8LlmmfCIhVXI8nrhWqP7vrOtW+j59dqvp91EMZleTnh1f8AVeK79r/eYUV/ZXCx2uaHewN71qZu4/f20+3+rDsP+NbQtzpNyfhP0SFOx9m3qedTbjTxmPqrll+TtrNO/onEeBd7vO2a7f2c5hc7kG47x9/NTpWX/ucmY/nppWnGejlJnU8ZifGPLRir5NYNXCJjwnz1U5z+SnlBwt5u8M5VcR22K6Lu/wC5VLXNS0DXdM3nUdF1HDiOub+LXb2+uF6RuW+Vd+PXtxPhrHm0rnJOxPqXJjx0nyUEF5tT4b4e1Tf8I6FpmXM9t7Forn65jdqercjfJ9qG8xo1WHXMfLxr9dG37MzNPwSFrlVj1fiUTHhpPk0LvJTIp/DrifHWPNUUWL1jyd9JuTNWkcRZuN3U5Nmm98aea0vWeQXjXD51WDc07Uqfm02r/m6591cREfWk7O3MG7wuaeO79EZe2Fn2uNvXw3/qigZ7XODOK9EiqrVOH9Rx7dPXdmxNVv8Afjen4sCk6LlFyNaJiY7kXXbrtzpXExPeAPbwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3zgfkh5QuMPN3dJ4dybeJX1ZeX+Is7d8TV01R+jEvFy7RbjnVzpHe90UVVzpTGrQxa7gvyT8O1zL/ABhxJcyKuurG02jmU/8AiVxMzH7Me1NfB3JhwFwlzK9D4YwLN+iNoybtHnr3t59e9Ue6YhEX9uY9vdRrVPwSFrZV6vfVuUa4R5KuULirmV6Nwtn12K9pjIv0RYtTHfFdzaJ926X+EvJP1rI5l3ijiXDwaOubGDbm9XPhNVXNimfZFS24iL23civdRpT8fmkbWybNPrb0RcL+TpyYaJFFeRpeTrN+n/Mz8iao3/Qo5tM++JSbomh6LoeP6Pouk4Gm2foYuPRaifdTEMgIu7kXb3r1TLft2bdv1KYgAYWUAAAAAAAAAAAAAAAB8mImJiYiYnomJaZxPpHoV30nHp/u9c9MfQnu9jdHVl2LeTjXLF2N6K42liu24rp0bGNkTZr16utGo7syxXi5VzHufKt1TTPj4ulGTGiyRMTGsAA+gAAADBa9wbwrrsVTq2gYGTXV13ZsxTc/fjar4s6PdFyu3POonSe54rt0XI5tcax3og4g5AOFcyKq9Izs7S7k9VMzF+3Huq2q/iRzxFyD8ZadFdzTa8LV7UdMRauebubfo17R7omVpRLY+386z+bnR37/AI8fiiMjk/g3vy82e7d8OHwUU1vQ9Y0S/wCY1fS8zBuTO0Rfs1Uc72TPRPuY9ffJx7GVYqsZNm3ftVxtVbuUxVTVHjE9bQOJ+RvgbWoqrt6dVpV+eq5g1ebj9yd6fqiE9jcqrdW69RMd8b/38UDk8lLtO+xXE907v38FRxMvFPIBxDhRXe0HUMXVbcdMWrn4m7PhG8zTP1wizXtA1rQcn0fWdLy8G5PyfPW5pir9GeqqPYsGNn42V+FXE/P3cVeydn5OL+LRMfL38GNAbjTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABu3J5yV8ccd3KKtC0W76HVO1Wdk/isemOrfnT8rbupiqfBZHk78l7hjSfN5fF+dd17KjafR7W9nGpnunaefX7d6Yntho5O0sfG3VVb+yOLbsYV69vpjd2qncMcNcQcT53oPD+j5up3+jnU49qaoojvqnqpjxnaE88AeStrubNvK4z1ezpVmemrEw9r1+fCa/kUz4xz1rtF0nS9FwKNP0fTsXT8S38mzj2qbdEe6Ie1X8nbt6vdajmx75S9nZNujfcnX5NC4E5IOT7gzzd3SdAsXcyjaYzMz8fe374mropno+bEN9BC3Ltd2edXOspOi3TRGlMaADw9gAAAAAAAAAAAAAAAAAAAAAAANP42x4t59rIiNvO0bT4zH+kwwDbuOKN8Gxc+jd2+uJ/o1FG340uSsWDVzrEADC2wAAAAAAAAAB05uJi5uNXjZuNZybFcbV2r1EV01e2J6JdwRMxOsPkxExpKLuLeQ7g/WIru6ZTe0TJnqnHnn2pnxt1fZTNKHOL+RnjPQefexsSnWMWOnzmFvVXEeNufW39m8eK2gmsTb2Zjbpq50dk+fFC5ewMPJ3xTzZ7Y3fDgoNdortXKrdyiqiumdqqao2mJ7phxXZ4u4I4X4qtzGtaTYvXdtoyKI5l6n2Vx0+6d4QpxryAani+cyeFM+nULUdMYuTMUXo8Ir+TV7+atOHyjxb/AKNz0J7+Hv8APRVszk3lWPSt+nHdx93lqhEe3WdJ1PRs2rC1XAyMLIp67d63NMzHfG/XHjHQ8SfpqiqNYnWFfqpmmdJjSQB9fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAbvyZ8lnGXKDkU/gLTZpwYq5tzPyd7ePR3+ttvVPhTEytZyW+TvwZwjNnP1iiOIdWo2q85lUR6Pbq/MtdU+2rfvjZH5e07GLuqnWeyP3ubmPg3b++I0jtVg5MuRvjjj2beRp2mzhaZV16hm727Ux30dHOr/ZiY75haDk18nXgfhWbeZq1ueI9Sp2nn5lERYpn8210x+9NXuTLERTERERER0REPqs5W18i/uiebHd5p3H2dZs753z3uNuii1bpt26KaKKIimmmmNoiI6oiHIEU3wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGB43mPwZap7ZvRP8ADLTm08dXI5uLZjr3qqn4RH3tWR2RP8SVgwI0sQAMDdAAAAAAAAAAAAAAAAY/X9D0jXsKcPWdOxs6x07U3qInmz30z10z4xtKFOOfJ/oqi5l8IZ/Nq6Z9Cy6t49lNz7qo96exvYe0cnDnW1Vu7Or3NHM2bjZkaXad/b1+9RbiHQtY4fz5wda07Iwb8dVN2naKo76Z6qo8YmYY1e3XdH0vXdPr0/V8Cxm41fXbu077T3xPXE+MdKDeUDkCrp85m8G5XPjaZnAyq+n2UXPuq/eXDA5S2L2lN+ObPb1fp+96nZ/Jq/Z1qsTzo7Ov9f3uQIPZq+mahpGfcwNUwr+HlW/lWr1E01R49PXHi8ayU1RVGscFaqpmmdJ4gD6+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA5Wrdy7dotWqKrlyuqKaKKY3mqZ6oiO2Vg+R7yatZ12LOrccV3tG06dqqMKnaMq9H52/8AhR7fW8I62vkZVrHp51ydGazYuXqubRCFeDuFOIeMNXp0rhzS8jUMmdpqi3Hq24+lXVPRTHjMwtTyS+TLomi+Z1Pji9b1rPj1owre8Ytufzuqbk+3ans2nrTfwnwzoPCmkUaVw7pePp2JR8y1T01T9KqqemqfGZmWXVbN21dveja9Gn4p7G2ZbtelXvn4OvGsWMXHt42NZt2LNqmKLdu3TFNNFMdUREdEQ7AQqUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYziHUqdPw5imr8fcja3Hd4+55qqimNZe7dE3Kopp4y1jijKjJ1e5zZ3otR5un3dfx3Yp9mZmd56ZfEVVVzpmVnt0RRTFMdQA+PYAAAAAAAAAAAAAAAAAAADD8V8L6FxTgeh65p1nLojfmVzG1duZ7aao6afd71e+UXkO1rRvOZ3DVdzWMGOmbO0ek249kdFf7PT4dqzgksDauRhT/AA51jsnh+iNz9k42bH8SNKu2OP6+1Qauiq3XVRXTNNdM7VUzG0xPdLiuJyi8mPDfGVuu/fsRg6nMerm2KYiqZ/Pjqrj29PdMK08oPJ7xHwXkT+Esbz2FVVtazbETVaq7omfmz4T7t+tednbax830fVq7J+nb81E2jsTIwvS9antj69nyaiAmEOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+0xNUxERMzPRER2g+Nw5MuTjirlC1T0Th/BmbFFURkZt3emxY/Sq7Z/NjeZ7ksciHk4ahrsWNc47pv6Zps7V2tPjejIvx+f226fD5U/m9Era6HpOmaHpdjS9HwbGDhWKebas2aIpppj+vfPXPags/bNFnWizvq7eqPNK4mzKrnpXN0fFHvI9yKcKcnlm1mU2o1XXNvX1DIojeie2LVPTFuPHpqntnsSeCq3b1d6rn3J1lYLdui3TzaI0gAY3sAAAAAAAAAAAAAAAAAAAAAAGE1ji7hTRud+FuJdHwJp66cjNt0T9Uzu1DVeXfko07eLvF+PeqjqpxrF29v76KZj4s1GPduerTM+xjqvW6PWqiPakoQZqXlR8m+LzoxsbXs6eybWLRTTP79cTt7mu5/la6JRv6BwdqF/r289l0Wt+7qpqbNOy8urhRPyYKs/Hp41rKip+Z5W+pVTPofBGJZ6tvO6hVc27+qilisnysONKor9G4d4ftzM+r5ym9XtHjtXG/wZo2Llz+X4wxTtPGjr+C4opZkeVPyj3ebzNP4bs7dfMxLs7/AL12XV/0ouUr/YaB/wDo6/8A5j3/AIFld3vef8Vx+/3LsCk//Si5Sv8AYaB/+jr/APmPtHlScpNNcVTjcP1RE7zTOJc2nw6Lh/gWV3e8/wAVx+/3Lril0eVRyhTzufpnD0b07U+bx7sbT39Nyd/Y6bnlL8X5G8Zul6fepmPk0V3KI39m8wx1bFzI4UxPthlo2li1T6Venslb/VtfxMOmqizVTfv9W1M+rHtlp2Zk3svIqv365rrq+HhCvON5RtyJ2yeEqKo367eftt7ptzv9bLYflD8P17emaBqlnv8ANV27n2zSjr+x9ozxt7u6Y801i7U2Zb9W5v74nyTUIxwOXPgHJ289k5+Hv1+exJnb9znf8w2HT+UvgLO28xxTptG/+3ueZ/niGhc2dl2/Wt1e6Unb2jiXPVuU++G2jzYOoYGfRz8HOxsqnvs3aa4+EvS1JiYnSW5ExMawAPj6AAAAAAAAAAAAAAAAAAAAOvKx7GXjXMbKs279i7TNNy3cpiqmqJ64mJ6Jh2BE6b4fJjXdKBuU7kKt3Iu6nwVMW6+mqvTrlfq1f7uqer9Gro8Y6kCZ+JlYGZdw83Hu42TZq5ty1dommqie6YnqX0alyicn3D/G2HNOoWPMZ1NO1nNtREXaO6J+lT4T7tp6Vo2Zyjrs6W8n0qe3rjz+ar7T5N272tzG9Grs6p8vkpiNs5ROAdf4JzvN6lY87h11bWMy1EzaueH5tXhPu3jpamu9q9Reoiu3OsSo96zcs1zRcjSYAGRjAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASByOclPEfKTqvMwLc4elWq9srUbtE+bt99NMfPr2+bHhvMQx3btFqma650iHui3Vcq5tMay1bhLhvXOLNbs6Nw/p17OzbvVRbjopjtqqmeimmO2Z2hc3kO5BdC4Fos6xrcWdX4ijaqLs072cWe61TPXP589PdFPTvvnJpwBw3yfaHGl8P4fMmqInIybm1V7Iqj51dX17RG0Rv0Q2pUtobXryNaLe6n4ysWHs6mz6Ve+r5ACFSYAAAAAAAAAAAAAAAAD5MxEbz0QD6NB4y5YuTnhXzlvUuJsS9k0dE42HPpF3fumKN4pn9KYQxxf5WXy7PCXC36GRqd37bVuf+Nu2NnZN/1KN3fuat3MsWvWqWlYjiLifhzh2153Xtd03TKdt49KyaLc1eyJnefcolxZy3cpvEnPoyuJ8rCsVf5On7Y1MR3b0bVTHtmUeX712/eqvX7td27XO9VddU1VVT3zM9aWs8n6533a9PBH3NsUx6lPvXi4k8pTkx0nnUYeZqGs3KejbCxZinf9K5NEbeMbo14h8rTUa+dRw/whi2Nt+bczsmq7v3TNFEU7fvSrIJK1sXFo4xr4z5aNG5tPIr4Tp4JY1/yh+VTVZmLeu2dNtz128LFoo/iqiqr4tC1zi3irXN41niTV9Qid4mnJzLlynaezaZ2iPBhBv28azb9SmI9jUrv3K/WqmQBnYgAAAAAAAAAAAAAHK3XXbriu3XVRXHVVTO0w2LSuPOM9L2jC4m1SimOqivIquUR+zVvHwa2Mdy1RcjSumJ8WS3duW51oqmPBKmj8vHHGHtGZ+DtSp7ZvY/Mq900TTHwbtonlEaZcmKdZ4dysbsmvFvU3Y9u1XN2+uVdRG3th4N3jb08N3y3JKztzOtcLmvjv8AnvXF0HlX4C1jm02tfsYt2f8ALzImzMe+r1fqluWNkWMqzTexr1u9aq+TXbqiqmfZMKEPbpOr6rpF7z2lalmYNztqx71VuZ9u09KIv8lLc77NyY8d/kmLHKu5G69bifDd5r3CqfDvLjxvpk00Zt7F1azHRMZNqKa9vCqjbp8Z3SXw1y/8M5vNt63gZmk3J666fx9qPfERV/DKDyOT+bZ3xTzo7t/w4pzG5Q4N/dNXNnv3fHgmEYvh/iLQtfs+d0XVsPOpiN5i1diaqfbT1x74ZRD10VUTzao0lM0V01xzqZ1gAeXoAAAAAAAAAAAAAAAB59SwcPUsG7g6hi2srGvU825au0xVTVHjEq58rPIrl6PF7WOFKbuZgRvVcw+mq7Yjvp+nT8Y8emVlBv4G0r+DXzrc7uuOqUfn7NsZ1HNuRv6p64UEnonaRaLld5HsDiWm9q/D9NrB1jpqrt/JtZU+P0a/zuqe3r3is+radnaTqN7TtSxbuLl2KubctXI2qpn/AJ7e10PZ207OdRrROk9cdcfp3ud7R2ZewK9K41ieE9U/r3PKAkUcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD7ETM7R0ytB5O/k9zdjH4q5QMOYt9FzE0m5HTV3V347u2KP3vozrZWXbxaOfXP6s+Pj136ubQ0/wAn/kG1DjaqxxBxLTe0/hzeKrdEerezY/N+jR31dvze+Lm6JpenaJpWPpWk4VnCwsajmWbFmnm00x/z0zPXM9MvXTTTTTFNMRTTEbRER0RD6pWbnXMurWrh1Qs+LiUY9OlPHtAGk2gAAAAAAAAAAAAAAfJmKYmZmIiOmZlFHKLy/cn/AAhNzFtZ065qNG8ejafMV00z+dc+THumZjuZbNi5eq5tunWWO5dotRrXOiWGs8bcfcHcGWfOcSa/h4Ne29Niauferjwt071THjtsp9yheUXx/wAT+cxtNyKOHMCreIt4NU+emPzr0+tv4081EGRevZF+u/kXbl67cqmquuuqaqqpnrmZnrlO42wK6t96rTujz/5RV/a9MbrUa+K0nHPlXW6fOY/BfD01z1U5epVbR7YtUTvPvqj2IJ425UOPOMfOW9d4jzLuNc68S1V5qxt3TRRtE+/eWmidx9n4+P6lO/t4yib2ZevetVuAG41gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHZj3r2Pfov4925Zu0TvTXRVNNVM+Ex1JD4U5Z+N9Dmi3kZtGr40dHm82nnVbeFcbVb+2Z9iOBgv4tnIjm3aYnxZ7GVex551qqY8Fo+EuXbhTVZos6xbv6LkVdG9z8ZZ3/TpjePfER4pQ07OwtRxacvT8vHy8ev5N2xciuifZMdChjJ8P6/rXD+X6Voup5WDd+dNq5MRV4VU9VUeExKuZfJezXvsVc2eyd8efzWTE5U3qN1+nnR2xuny+S9ArxwZ5QObZmjH4r02nKt9U5WJEUXI8Zon1Z900+xNXCfF/DnFOP53Q9VsZVURvXa35t2j20T0x7dtlWzNl5WH+JTu7Y3x+/FacPauLmfh1b+yd0/vwZ0BHpEAAAAAAAAAAAAAAafymcn2i8cadzMuiMfULVMxjZtFPr0du0/Sp37J7522luAy2b1yxXFy3OkwxXrNu/RNu5GsSpDxtwprPCGsV6brGNNurpm1ep6bd6n6VE9vs647WCXj4v4a0jirRrmlazjRes1dNFUdFdqrsqpnsmP9J3hU/lQ5PdX4G1LmZETk6beqn0bMopnm1fm1fRr27Pq3dA2RtujNjo7m6v5+Hk59tfYdeFPSW99Hxjx82mAJ5AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADnYs3ci/bsWLVd29cqii3bopmqqqqZ2iIiOuZnsdmBh5WoZ1jBwce7k5V+uLdq1apmquuqZ2iIiOuZXS8nHkPxuCMW3xFxNYs5PEl2nei3O1dGBTPZTPVNzvqjq6o6N5nSzc63iUc6rj1Q2sXFryKtI4dcsX5OXIJZ4bjH4q40xrd/WuivFwqtqqMPuqq7Krnwp8Z6YsKCkZOTcya+fclaLFiixRzaIAGBmAAAAAAAAAAAAARRyrcvHBfA03cGzf/DmsUbxOHh3I5tue65c6Yp9kb1R3MtmxcvVc23Gssdy7Rap51c6QlauqmiiquuqKaaY3mZnaIjvQtyneUbwXwrXdwNF34j1Kjemaca5FOPbn8670xP7MVe2FYOU/lg414/uV2tT1CcPTZ+Tp+HM27O353TvXP6Uz4RCPljxNg0x6V+de6PNC5G1pndaj2pB5SeWHjrjuq7Z1PVasTTq+j8H4e9qzt3VdO9f7Uz7kfAn7dqi1TzaI0hEV3Krk86qdZAGR4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHbiZORiZNvJxL93Hv2551Fy1XNNVM98THTDqCY13S+xOm+EvcDcuvEGkxRi8Q2Y1nFjo87vFF+mP0uqr3xv4p44J454a4wx+fo2oU1Xoje5i3fUvUe2ntjxjePFSl2Y1+9jX6MjGvXLN63POouW6ppqpnviY6YQGdyexsnWq36FXdw93lonsHlFk42lNz06e/j7/PVfcVn5PuXXWdK83hcT2atWw46IyKdoyKI8d+iv37T4p/4U4o0LinA9N0PUbWXRG3Poidq7c91VM9NPv6+xTM7ZWThT/Ejd2xw/fiumDtXGzY/h1b+yeP6+xmQEckgAAAAAAAAAAAB49a0vT9Z0y/puqYlrKxL9PNuWrkbxPj4THXEx0xPU9g+01TTOscXyqmKo0ngqRyv8mGocFZdWbieczNDu1bW8iY3qszPVRc2+FXVPhPQjtfXPxMXPwr2Fm2LeRjX6Jou2rlO9NVM9cTCrXLZyXZHCGVXq+kUXL+hXq/bVi1T82rvp7qvdPTtM3vYu3YyNLF+fT6p7f1+ahbb2FONrfsR6HXHZ+nyReAs6sAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADvwMPK1DOsYODj3cnKv1xbtWrVM1V11TO0RER1zLrsWbuRft2LFqu7euVRRbt0UzVVVVM7RERHXMz2Lr+TVyK2eBsSjiTiG3Re4kyLe1NvrpwaKo6aY765joqq7OqOjeZ0s7NoxLfOq49UNrFxasivSOHXLv8nLkVxeAcGjXtet2snia/R4VUYVMx00UT21T1VVe6OjeappBR79+u/XNdc75Wq1aos0RRRG4AYWQAAAAAAAAAAB1ZWRYxMa5k5V+1YsWqZruXblcU00Ux1zMz0RHiDtapyjcoXCnAOm+mcR6lTZrrpmbOLbjn37/wChR987RHbMIT5ZfKZxcPz2j8nlNGXkdNNzVb1G9qj/AHVM/Ln86r1ejqqiVWdb1XUtb1O9qer52RnZt+rnXL9+5NddU+2ezujsTuDsSu7pXe9GOzr/AEROVtSi36NvfPwSxyueUFxZxn57TtIqr0DRat6Zs2K/x96n/vLkdO0/Rp2jp2nnIaBaLGPbsU823GkIG7eru1c6udZAGZjAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAbRyZ6dhanxFXjZ+PTfs+j11c2rfr3p6ej2vF25Fuia56m3gYdebk0Y9E6TVOka8GriX9Q5ONByImcWrJw6uyKa+dT9VW8/FrOqcmurWN6sDJsZlPZTP4uv6p6Pi1be0LFfXp4rBm8itr4u/o+fH/AIzr8N0/Bow9mpaZqGm3PN5+Hex6uzn07RPsnqn3PG3ImJjWFXuWq7VU0VxMTHVO6QB9eAAAAAAB7NH1TUdHz7efpWbfw8q38m7ZrmmfZ4x4T0S8Y+VUxVGk8H2mqaZ1jisLyccvFm95vT+NLUWbnyadQs0epP8AvKI6vbT0eEJxw8rGzcW3lYeRayMe7Tzrd21XFVNUd8THRKhLauAePeIuC8vn6Vlc/Fqq3u4d7eqzc8duyfGNp9vUq+0eTVu7rXjejPZ1fp8vBadm8pblrSjJ9KO3r/X5+K6I0jk25TOH+NbNNmxc9C1SKd7mDeqjnT0dM0T8+PZ098Q3dSr9i5Yrmi5Gkwuti/bv0RXanWJAGJmAAAAAAAAAAHXk2LGVj3MfJs271m5TNNdu5TFVNUT1xMT1w7AidHyY1VZ5ceS65wnkVa3otFdzQ71e1VHTNWJVPVTPfRPZPunp2mYqX2zMbHzMW7i5Vm3fsXqJouW7lO9NdM9ExMT1wqvy3cmV7g7OnVNKouXtCyK/VnpmcWqfmVT3d0+6enpm97D2308RYvz6XVPb+vz8VE27sToJnIsR6PXHZ+ny8EYgLQqwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+0xNUxERMzPRER2vi0vkocjG8Y3H/FeJvHRc0nDu0/VfriY9k0fvfRa2XlUYtua6/+WfHx6r9fMpbF5LvIrHDGNZ4x4qxf/ty9RviYl2n/AKlRPzpj/aTH7sTt1zO1gwUTJya8m5Nyud612LFFmiKKQBgZgAAAAAAAAAAEF8uvlA6Twd5/QuFps6rr8b0XLm/Ox8Oe3nTHy64+jHRHbPRtObHx7mRXzLcayxXr1FmnnVykblO5ReGOT3R/TtfzYi9XE+jYdraq/kT3U093fVO0R39SlnLDyycVco2TXj5F2dO0SKt7Wm2K55k7T0Tcq67lXV19EdkQ0fiLW9W4i1i/q+t59/Pzsire5eu1bzPhHZER2RG0R2McuGBsq1i+lVvq7ezwVzL2hXf9GN1P74gCVR4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3Lkf/ACsr/Va/tpaa3Lkf/Kyv9Vr+2lrZf4FXgneTP+bY/wDVCYAFWfol137Nq/aqtX7VF23V0VUV0xVE+6Wn6/yeaTmxVd06qrAvz2U+tbmfZ2e6fc3QZbV65anWidGhn7Kw9oUczJtxV848J4x7ECcQ8O6rod3bOx581M7U3qPWt1e/s9k7SxCx9+1av2arN+3Rdt1xtVRXTvEx3TEo44y5PoimvN0GmejprxZnf9yfun3dyZxtpU1+jc3T8HLNvcg72LE3sGZrp/l/NHh2/PxRuPtdNVFdVFdM01UztMTG0xPc+JRzuY0AAAAAAAAc7F27YvUXrFyu1dt1RVRXRVMVUzHVMTHVKc+Szlyu4/mtJ40qqvWuim3qNNO9dPd5ymPlR+dHT3xPWgkaeZgWMyjmXY9vXHg3MLPv4VfPtT7OqfFfbDycfMxbWViX7eRYu0xVbuW6oqprieqYmOt2qccmnKPrvBGXFONXOXpldW97Cu1epPfNM/Nq8Y6O+JWn4G4w0PjHSoz9HyedNMR57Hr2i7Znuqj746Jc/wBp7HvYM87jR2+fY6DszbNnPjm8K+zy7WwAIhMAAAAAAAAAADo1DDxdQwb+DnWKMjGv0Tbu2643pqpnriXePsTMTrD5MRMaSqJyy8nWVwPq/nsbn39Fyqp9GvT0zRPX5uvxjsntj3xEfr28QaRp+vaPk6TqmPTkYmRRza6J+ExPZMT0xPZKn3KhwRqHA/ENWBkc69h3d68PJ26LtHdPdVG8RMe/qmHQNh7Y+909Ddn04+P69vvc+27sacSrprUehPwny7Pc1MBYlcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASJyDcmWdylcXU4k+csaNiTTc1HKpj5NG/Rbpnq59W0xHdETPTttOO7dptUTXXOkQ927dVyqKaeMty8lrkfnjLVKOKuIcb/7vYVz8VZuU9Gbdpnq8bdM/K75jm9+106aaaaYppiKaYjaIiOiIebSNOwdI0vG0vTca3i4eLaptWLNuNqaKYjaIh6lFzs2vLuc6eHVC2YmNTj0c2OPWANJsgAAAAAAAAADpzsvFwcO9mZuRaxsaxRNy7eu1xRRRTEbzMzPRER3sfxZxHo3CuhZGt69n2sLBsRvVcrnpqnsppjrqqnsiOmVIeXXln1rlGzasHF87p3DtqvezhxV617bqruzHXPbFPVHjPTO/g7PuZdW7dT1y08vMox6d++exu3L75RGVrfn+HOAr97E0yd6MjUo3ovZMd1vtoo8flT+bG+9dJmZneemXwXTGxbeNRzLcKzfv136udXIA2GEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAblyP8A5WV/qtf20tNblyP/AJWV/qtf20tbL/Aq8E7yZ/zbH/qhMACrP0SAAAA0/jzg6zrNqvOwKabWo0xv3U3o7p8e6fr8Ifu267V2q1doqoromaaqao2mJjriYWQaByp8MRk49euYNv8AvFqP7zTEfLoj53tj7PYlsDMmmYt18OpzflnyVpvUVZ+JTpXG+qI647Y746+3x4xYAnHIQAAAAAAABkeHNc1Th7VrWqaPmXMXKtT0VUz0VR201R1TE90scPNVNNcTTVGsS9U1VUTFVM6TC2vJLyqaZxnZowM2LeBrdNPrWOd6l/brqtzP182emPGI3SMoPYu3bF6i9YuV2rtuqKqK6KpiqmY6piY6pWL5GeWS3qc2dA4tv0Ws6dqMfOq9Wm/PZTX2RV49U+E9dI2xyfmzrexo1p647PDuXjY/KCL2lnJnSrqnt8e9NoCqrWAAAAAAAAAAMFx3wtpnGHD17R9So2pq9azdpj1rNyI6K4/p2xvDOj3buVW6oronSYeLlum5TNFcaxKjfF/DupcLa/kaNqtrmX7M9FUfJuUz1V0z2xP+nXDELhcsfAOPxvw/NNmKLWr4sTVh3p6N++3VP0Z+E9PfE1DzcXIwsy9h5dmuzkWK5t3bdcbVU1RO0xLpWyNp059rWd1UcY+vg5ntfZdWBe0jfTPCfp4w6QEsiQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3RXcuU27dNVddUxFNNMbzMz2QDMcEcM6rxhxRhcPaNZ87l5dfNiZ+Tbp66q6p7KYjeZfoVyZcF6TwDwhicPaTRvTajn378xtVkXZiOdcq8Z26I7IiI7GjeTJyV0cAcLRqeq2I/tFqduKsnnR041vrizHj21d89HZCX1N2vtD7xX0dE+jHxlZdnYfQ08+r1p+AAhkmAAAAAAAAAANa5RuNtA4C4cua3r+V5u1Hq2bNHTdyLm3RRRHbPwjrmYh5eVTlC4f5O+HatV1q/zrtzenExKJ/G5NcR8mnujq3qnojfvmImhnKXxzr3H/El3WtdyZqmZmMfHpmfNY1HZRRHZ4z1zPTKV2bsyrKnnVbqfn4I/NzqceObTvqe/le5S+IOUjXvTtVueYwrMzGHgW6pm1Yp7/zq57ap6/CNojSAXO3bptUxRRGkQrNddVdU1VTrIA9vIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3Lkf/Kyv9Vr+2lprcuR/wDKyv8AVa/tpa2X+BV4J3kz/m2P/VCYAFWfokAAAAfJiJiYmImJ64l9AQbx9on4D1+5ZtU7Yt6PO2PCmeun3T0ezZr6YuVjTIzeGpy6Kd72FX5yJ7eZPRVH2T7kOrPhXumtRM8Y3Pz9ys2TGzNpV0URpRV6VPhPV7J1jw0AG2rQAAAAAAAAACb+RPlgr07zPDvFmRNeF8jGzq53mx3UV99PdPZ29HVYuium5RTXRVFVNUb01RO8THfCgqX+RDlYvcPXrOgcRX67ujVTFFm9V01Yk/bNHh2dncqW2tgxXrfxo39cdvfHf3da3bE29NGljJnd1T2d093f1eHCzg42blu9aovWblNy3XTFVFdM7xVE9MTE9sOSkruAAAAAAAAAAIW8ozk6jVMK5xdotj+/41G+daojpv24j5cfnUx198eyImaSemNpbWFmXMO9F231fGOxqZuHbzLM2rnX8J7VBBKnlA8nv9l9a/DelWJjR8+5Pq0x0Y92emaPCmemY98dkIrdRxMq3lWou2+EuW5eLcxbs2rnGP3qANhrgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACyPkeclkapqFPKBruNvhYlyY0u1XT0Xb1M9N3p66aJ6I/O/RRLyK8AZnKLxzi6LZ85bwqPx2fkUx/hWYnp2/On5MeM79US/QjR9OwtI0rF0vTcejGw8S1TZsWqOqiimNohA7az+io6Gid88e6P1S2zMTpKulq4R83rAVJYgAAAAAAAAABp/KzygaLydcLXNa1Wrzt2uZt4eJRVEV5Nzb5Md0R1zV2R3zMRPq5SuNtE4B4Xv69rl6Yt0zzLFmj/EyLsxMxRTHfO09PVERMyoFylcca7x/xNe1zXL/ADq59WxYomfN49vfoooju7565nplK7M2bOVVzqvUj49yPzs2Menm0+tLq5Q+Mtc464mv69r2T52/c9W3bp6Ldi32UUR2Ux9czvM7zMy10F0oopopimmNIhWKqpqnWeIA9PgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3Lkf/Kyv9Vr+2lprcuR/wDKyv8AVa/tpa2X+BV4J3kz/m2P/VCYAFWfokAAAAAB0ahjUZmBkYle3NvWqrc790xsroskramtkzurjw+rlX2l0RFWNV1+n/b5gCYcuAAAAAAAAAAAAS3yG8qd3hrJt6Fr+RcuaLcnm2rlU86cSqZ6+/mT2x2dcdu9nrNy3etUXrNym5brpiqiumd4qiemJie2FBkxcg3KlOgXrfDfEF+qrSbtUU41+uf+q1TPVP5kz+719W6qbd2J0sTkWI9Lrjt747/n48bZsLbnRTGPfn0eqezunu+XhwsyFMxVTFVMxMTG8THaKOvIAAAAAAAAADwcR6Pga/omVo+pWYu4uVbmiuO2O6qO6YnaYnvhTHj3hjP4Q4mytFz4mqbc86zd22i9bn5Nce3t7piY7F3Uf8uHAtHGXC9VzDtU/hjBibmJV1Tcj51qZ8ezxiOzdPbC2n9zvcyufQq+E9vmgdvbL++WefRHp0/GOzy/VUQfa6aqK5orpmmqmdpiY2mJfHRXOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB2Y1i9k5FrGx7Vd69drii3bopmaq6pnaIiI65mXWsh5GnJrGp6rXx/rGPvh4Nc29Morp6Ll+PlXPZR1R+dPfS18vJpxrU3Kupmx7FV+5FEJ08n3k5scnXAtnDvUUVazm82/qV2On19ui3E/RoidvGedPakYFAu3artc118ZW+3bpt0xTTwgAY3sAAAAAAAAYjjHiTSOEuHMvX9cyox8LFo51U9dVU9lNMdtUz0RD36jmYmnYF/Pzsi3jYuPbqu3rtyramimI3mZnu2UP8oblXy+UjiSbOHXcs8O4Ncxg2J3jzs9U3q4+lPTtHzYnbrmZmQ2fgVZdzT8scZaeZlxj0a9c8GC5YuUXV+Ufiq5q2fNVnDtb0YOHFUzRj29/jVPRNVXbPhERGlAvFu3TbpiimNIhVa66q6pqqnfIA9vIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3Lkf/ACsr/Va/tpaa3Lkf/Kyv9Vr+2lrZf4FXgneTP+bY/wDVCYAFWfokAAAAAAVtWSVtTOyfz+z6uWfaX/pv9/8AYAJlywAAAAAAAAAAAAABO/k98p/mKrHCHEORHmZ2o07Jrn5E9lqqe76M9nV1bbWEUEjoneFmvJ95S/w/iUcMa5kb6rj0f3a9XPTlW4jqme2umPfMdPZMqXyg2PzdcqzG780fXz9668n9s87TFvTv/LP08vcmEBUFwAAAAAAAAAAVs8pfgWNL1SOLdMs7Yedc5uZRTHRbvT8/2Vfzb98IXXu17SsLW9Gy9J1G153Fyrc27lPbtPbHdMT0xPZMKWcccOZvCnE+Zoeb61div8Xc22i7bnpprj2x9U7x2L/yd2l94tdBXPpU/GP08nP+Uezfu93p6I9Gr4T+vmwgCyK0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2Hk54T1DjfjLTuG9NpmLmVc2uXNt4s246a7k+ERvPjO0dcv0X4Y0TT+G+HsHQtKsRZwsGzTZtUx17R2z3zM7zM9szMoY8jzk8/s3wdVxbqVjm6prVETZiqPWtYvXTH7c+tPhzU8qbtnN6e70dPq0/NZdmY3RW+fPGfkAIZJgAAAAAAAAIE8rHlZnhXRquENAyubrmfb/ALzdt1etiWJ8eyurs7o3nuZ8bHryLkW6OMsV+9TZomupG3lZcr39odQu8D8OZW+kYlzbPv256Mq9TPyIntopn3TVG/VETNeQXzGxqMa3FuhUr96q9XNdQA2GEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAblyP/AJWV/qtf20tNblyP/lZX+q1/bS1sv8CrwTvJn/Nsf+qEwAKs/RIAAAAAAraskramdk/n9n1cs+0v/Tf7/wCwATLlgAAAAAAAAAAAAAA7sLJyMLLs5eJersZFmuK7dyidqqaoneJiXSPkxExpL7EzE6wuDyN8fY/G/D8Tfqot6viRFOZZjo53dcpj6M/Ceju33pR3gviPUeFOIsbWtMr2u2Z2romfVu0T8qirwn4dEx0xC5nCHEGn8UcPYutaZc51i/T00z8q3VHyqKu6Yn+vVLne3Nlfc7nSW49Cr4T2eTouwtrffLfR3J9On4x2+bLAIFPgAAAAAAACK/KM4K/tFwt+G8G1vqWlUVV7RHTdsdddPjMfKj3x2pUJ6Y2lsYmTXi3qbtHGGtl41GVZqtV8JUEG/wDLpwZ/ZDjO5OLa5ul6hvfxNo6KOn17f7Mz0eE0tAdVx79GRapu0cJcpyLFePdqtV8YAGZhAAAAAAAAAAAAAAAAAAAAAAAAAAAAEh+T9wFXygcouHpt63VOl4u2TqNcdXmqZ+Rv31ztT7JmexHi+XkucA/2J5N7GRm4829Y1jm5eZzo2qop2/F257ubTO8x2VVVI3amX92sTMetO6G7gY/T3YieEb5StbootW6bduimiiiIppppjaIiOqIhyBRlrAAAAAAAAAdGfl42Bg387Nv28fGx7dV29duVbU0UUxvNUz2REQRGo1Lll4/0/k64JydbyuZdy6/xWDjTPTfvTHRH6Mdcz3R3zET+e+v6tqGu61l6xquTXk5uXdm7eu1ddVU/ZHZEdkRs3Tl65RsnlH44vahTVXRpOJzrGm2J6Obb36a5j6VcxvPujsR6u+ysCMW1rV608fJVs/L6evSPVj96gCUaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3Lkf/Kyv9Vr+2lprcuR/wDKyv8AVa/tpa2X+BV4J3kz/m2P/VCYAFWfokAAAAAAVtWSVtTOyfz+z6uWfaX/AKb/AH/2ACZcsAAAAAAAAAAAAAAAAEi8hnH1fBvEXo2ddq/A2dVFOTE9MWquqLsR4dU98d+0I6GDJx6Mm1Nq5G6WfGyLmNdi7bnfC/VFdNyimuiqKqao3pqid4mO+H1CXk08fen4UcHatf3ysajfArqnpuWo67ftp64/N/RTa5dnYdeHem1X1fGO11PBzKMyzF2jr+E9gA1G2AAAAAAAA07lg4Qo4y4LycC3RTOfY/H4VU9H4yI+Tv3VRvHviexTeuiq3XVRXTNNdM7VUzG0xPdK/KrnlKcIfgPi2NdxLUU4OrTNdUUx0UX4+XH7XyvbNXctvJjP5tU4tc7p3x49cfVUOVGBzqYyqI3xunw6p+iJwF2UkAAAAAAAAAAAAAAAAAAAAAAAAAAABKfkx8Cf235TcX0uz5zStK2zM3ePVr2n1Lc/pVbbx9GKl90U+S5wPPBfJfi15dnzeqavMZuVvG1VEVR+Ltz7Kdp27JqqSso+1sr7xkTpwjdC1bPx+hsxrxneAIxvAAAAAAAACrvlncpnNojk60fInnTzburXKJ6o+VRZ9/RVP7Mdswm/lm46xOT3gPN169zK8qY8zg2Kv82/VE82PZG01T4Uz2vzx1XPzNU1LJ1LUMivIy8q7VevXa53qrrqneZn3yntiYPSV9NXG6OHj+iI2plcynoqeM8fB5gFtV4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAblyP/lZX+q1/bS01uXI/wDlZX+q1/bS1sv8CrwTvJn/ADbH/qhMACrP0SAAAAAAK2rJK2pnZP5/Z9XLPtL/ANN/v/sAEy5YAAAAAAAAAAAAAAAAAA9Ol5+XpepY+o4F6qxlY1yLlq5T101RO8Lncm/FeJxlwpjaxj82i7MebyrMT/hXYiOdT7OmJjwmFKEg8hfG88H8W0UZl3m6TnzFnL3notz825+zM9PhM+CC27s375Y59EenTw74648k7sHaX3O/zK59Crj3T1T5rdBExMRMTvE9UjnLpAAAAAAAAA1nlP4Xt8X8F52jzFPpE0+dxa5+Zep6aZ8N+mmfCqWzDJau1Wq4ro4xvY7tqm7RNuuN07lB79q5Yv3LF6iq3dt1TRXRVG00zE7TEuCWfKZ4UjRuMadcxbXNw9Wia69o6Kb8fL+uNqvGZqRM6th5NOVYpvU9f7lyfMxqsW/VZq6p/wCABstYAAAAAAAAAAAAAAAAAAAAAAAASL5O3BP9ueVDTtPyLPnNNxJ9Mz946JtUTHqT+lVNNPsme5HS7Hkb8Fxw/wAnFXEOVZ5udr1cXYmY6aceneLce/eqrxiqnuR+08r7vjzVHGd0NzBsdNeiJ4RvlOMRERtHRD6CiLYAAAAAAAAPkzERvPRD6hryseUH+x3J/VpGn3+ZrGtxVYtc2fWtWdvxtzw6JimPGrePks2PZqv3It08ZY712m1RNdXUrn5T3KLPHfH9zGwL/P0TSZqx8PmzvTdq3/GXf2pjaPzaY75RMDoFizTZtxbp4Qp925VdrmurjIAysYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3Lkf/Kyv9Vr+2lprcuR/8rK/1Wv7aWtl/gVeCd5M/wCbY/8AVCYAFWfokAAAAAAVtWSVtTOyfz+z6uWfaX/pv9/9gAmXLAAAAAAAAAAAAAAAAAAAAFpPJv40/D/DE6DnXedqOlURTTNU9Nyx1Uz+z8mf2e9K6kPAXEmVwnxXha5i71eYr2vW4n/Ftz0V0++OrunaexdXSs7F1PTcbUcK7F3GybVN21XHbTVG8Od8oNn/AHXI6SiPRq+E9fm6Lye2h96x+jrn0qfjHVP0ekBALAAAAAAAAA1Llc4Xji3gXO0yijnZdFPn8T/e0RMxHvjen9pTKYmJmJiYmOuJX6VI8oLhj+znKDk3rFvm4Wp75dnaOiKpn8ZT7qt527Iqhb+S2bpVVjVde+Pr+/FT+VOFrTTk09W6fp+/BHYC6KUAAAAAAAAAAAAAAAAAAAAAAAA2Lk24YyOMuOtI4ax+dE5uRTRcrpjebdqPWuVe6mKp9z9IsHFx8HCsYWJaps42PbptWrdPVRRTG1MR4REQq55DPCHPv6vxvlWui3HoGFMx2ztVdqj3cyN/GqFqVP25k9Jf6OOFPzWTZVnmWufPGfkAIRKAAAAAAAAOvJv2cbHu5ORdotWbVE13K652pppiN5mZ7IiH53ctnHF7lA5Q9Q16Zrpw4q8xg26vmWKeino7JnpqmO+qVm/LK48r4e4JtcK6femjP1znU35p66MWn5f78zFPs5yl61bBxObRN+rjO6PBAbWyOdVFqOriALChgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABuXI/wDlZX+q1/bS01uXI/8AlZX+q1/bS1sv8CrwTvJn/Nsf+qEwAKs/RIAAAAAAraskramdk/n9n1cs+0v/AE3+/wDsAEy5YAAAAAAAAAAAAAAAAAAAALD+SzxfN/DyOD827HPx4nIwd566Jn16I9kzzo9tXcrwyXDGs5fD/EGDrWDVtfxL0XKY32iqO2mfCY3ifCWhtPCjNxqrXX1eLf2ZmzhZNN3q6/BekeLQNUxNb0XD1bBr5+Nl2abtue2ImOqfGOqY74e1yyqmaZmJ4w6pTVFURVHCQB8egAAAAABGflHcNfh3k/u59m3zsvSapyaNuubfVcj2bbVfsQkxwv2rd+zXZvUU3LVymaa6Ko3iqJjaYlsYuRVjXqbtPGJa+Xj05Nmq1VwmFBxnePtBucM8Y6nolcTzca/MWpn51ufWon30zDBOsW7lNyiK6eE73Jbluq3XNFXGNwA9vAAAAAAAAAAAAAAAAAAAAA5W6K7lym3bpqrrqmIpppjeZmeyHFJ/kv8ACscVcsOlW71vn4mmzOoZETG8bW5jmRPfE3Jojbu3Yr12LVuqueqHu1bm5XFEda6HJFwrRwXyc6Lw7FFNN7Hx4qyZj516r1rk79vrTMR4RDawc7rrmuqaquMrnRTFFMUxwgAeXoAAAAAAcL923Ys13r1ym3at0zVXXVO0UxEbzMz3OaFvK+41/szyZV6NiXYo1DXqpxadp6abERvdq98TFH7bNj2ar92m3T1sV67Fq3Nc9SqPLTxne485RtT1+aqvRZr8xg0T8zHomYo6OzfpqmO+qWmA6Fbt026Iop4Qp1dc11TVPGQB7eQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAezStL1HVL3mtPw7uRV282Oin2z1R7286JyZ3q+bc1jNi3Hbax+mr31T0R9UsF3JtWvXlL7N2Fn7Sn/wCPbmY7eEe+d31R0ymmcPa3qUROFpuRcpnqrmnm0T+1VtCZdI4Y0LS4icXT7PnI/wAy5HPr+uer3Myjrm1f5KfeveD9m8zpOZe9lMfWfJE2n8mmr3dpzMvFxqZ7Kd7lUe7oj4s7h8mWlW4icvPy79UdfM5tET7tpn4t8GlXtC/V16LVjci9j4//AGudPbVMz8OHwa1j8DcMWen8HecnvuXa5+G+z32+G+H7cbU6LgT+lYpq+2GWGvN+7Vxqn3pq1sjAtfh2KI8KY8nip0jSqaYpp0zCiI6IiLFPR8H38FaX/wBm4f8A4FP9HsHnn1drZ+62P5I90Mfd0TRru3ndIwK9urnY9E7fB5L/AAnw5fjavR8WP0KeZ/LszY+xdrjhVLFc2diXPXtUz40x5NSy+Tzhu9Exbs5GNPfbvTP827DZ3JfanecHVq6fzb1qJ+MTH2JGGanNv08KkXkclNj5HrWIjw9H5aIY1Hk/4jxImq3Ys5dMdtm50/VVtP1NbzcPLwrnm8zFvY9fZTdommZ+tYt15FixkWptZFm3etz1010xVE+6W3b2rXHrxqrOb9nOJc3412aZ798fSfmriJl1ngDQc6Kq8e3Xg3Z7bM+rv40z0fVs0Dijg3UtD5tzzlrKs1zMU1W+ir30/wBN0jZzrV2dInSe9R9q8kNpbNpm5VTzqI66d/vjj8Gsj7MTEzExMTHY+NxVxuXI/wDlZX+q1/bS01uXI/8AlZX+q1/bS1sv8CrwTvJn/Nsf+qEwAKs/RIAAAAAAraskramdk/n9n1cs+0v/AE3+/wDsAEy5YAAAAAAAAAAAAAAAAAAAAAAsN5KvFXncPM4Ryq/Xsb5WHvPzJmIrpj2TMVbfnVdydVHOC9dyOGeKdP1zG3mrFvRVVTE7c+ieiqn30zMe9d3AysfOwbGbi3Iu4+Rbpu2q46qqao3ifqlz/lJhdBk9LTwr+fX5ug8ms3p8boquNHy6vJ3AK4sgAAAAAAACv/lY8Pc27pfFFmjoqicLImO+N6rc/wA8e6ECLrcp+gRxNwJqukRRzr1yxNeP0dPnaPWo29sxEeyZUpnonaXQuTWV02J0c8aN3s6vL2OecpcTocvpI4V7/bHHz9oAsKugAAAAAAAAAAAAAAAAAAAC4XkO8MegcFapxTft7XdVyYs2Jn/Y2t43j211VRP6EKgWLVy/eos2aKq7lyqKaKaY3mqZnaIh+lHJ1w/b4U4F0Xh2iKInAw7dq5NPVVc23rq99U1T70Ht6/zLEW4/NPwj9wldk2uddmuer6s+AqCxgAAAAAAACg3lP8ZTxhysahOPe85p+l/3DE2nonmTPPq99fO6e2IpXD5ceLo4J5MNY1y3cijMiz5jC75v3PVomPZvNXspl+dlUzVMzMzMz0zM9qybAxtZqvT4R9UJte/pEWo8ZfAFnQQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPsRMztEbzLeuEeT7KzYoy9ZmvFx52mmzHRcrjx+jHx9jFdvUWaedXKR2bsrK2nd6LGo1nr7I8Z6v3o1DSdLz9VyoxtPxbl+5282OimO+Z6oj2pH4c5OMSxFN/Wr3pNzr8zbmYtx7Z65+HvbtpuBh6bi04uDj27Fmnqppjr8Zntnxl6UJkbSuXN1G6Pi63sXkJh4cRcyv4lf/rHs6/b7nVi49jFsU2Mazbs2qeqi3TFMR7odoI6Z1XmmmKY0pjSAB8fQAAAAAAAAAAABoHGGb6Xq9Vumd7dj8XT7e2fr6Pc3LWsyMDTL2TvHOinaiO+qeiEaTMzMzMzMz1zLew6N81KlypzObRTj09e+fp++55szBxsuPx1uOd2VR0THvYLP0XIsb12J89R3RHrR7u1swk6LtVHBzzK2fZyN9UaT2w0WYmJ2noluXI/+Vlf6rX9tLq1DTcfMiapjmXfp0x9ve9/Jdg38Pi+uLtO9M41fNrjqnppZMi7TXYq7dGrsXZ13G2vjzO+nnRv80rAK070AAAAAAK2rJK2pnZP5/Z9XLPtL/wBN/v8A7ABMuWAAAAAAAAAAAAAAAAAAAAAAC0HkwcTfhXg27oWRc52TpVzajfrmzXvNP1Tzo8I5qr7eeQ3iT+zXKLgX7tzmYmZPomTvPRFNcxtM+EVRTPsiUVtrD+9YlVMcY3x7P0S2xcz7rl01TwndPt/VcIBzF08AAAAAAAAU35atB/s9ykariW7fMx79z0rHiI2jmXPW2jwirnU+5chBPlZ6Hz8HSOI7VHTarqw78+FW9VHuiYr/AHk/ybyehzIonhVGnt4x5e1X+UmN02HNccaZ19nCfP2K9AOiOdAAAAAAAAAAAAAAAAAAAAJK8mbhz+0vLNodi5bivGwrk59/eN45tr1qd47YmvmR736AKveQjw9zcbiLiu7R0110afYq7toi5c+219S0KmbbvdJk83qp3fVZtl2uZY53aAIdJAAAAAAAOvIvWsfHuZF+5TbtWqJrrrqnaKaYjeZme7YFTfLl4s9K13SODca5vbwrc5uVET0edr3poifGKYqn/wD6K1th5SeI7vF3HmtcR3ZqmM7LruW4q66bUerbp91EUx7mvOg4Vj7vYpt+/wAetT8q9012qsAbTXAAAAAAAAAAAAAAAAAAAAAAAAAAAAHq0vAy9TzaMPCs1Xr1fVTHZHfPdHi9PDmiZ2u6hTiYdvojablyY9W3HfP9O1NHDHD+BoGFFjEoiq7VEedvVR61yfujuhpZeZTYjSN9S18m+S1/bFfSVejajjPb3R58I+DFcGcF4WiU0ZWXzMrP2358x6tv9GO/x6/Y2wFeuXartXOqnWXb8DZ+Ps+zFnHp5tMfHvntkAY24AAAAAAAAAAAAAAA68m9Rj49y/cnai3TNU+yH3i+VVRTEzPBqPHmbz8m1g0Verbjn1/pT1fD7Wsu3Mv15WVdyLk+vcqmqfDwdSZtUcymKXKdoZU5eRVdnr4eHUAPbTG/8hFmzkcY5Nm/bpuW6sC5E01RvE+vQ0BIfIB+W1/9Rufz0E72xizMXaZhvnEvC1zDirK0+KruP11W+uqj+sNYTK1LirhiL/OzdNoim7112Y6q/GO6fDt+3SyMXT0qPcvez9ra6W78+3z82jhVE01TTVExMTtMT2CPWAAAAAVtWSVtTOyfz+z6uWfaX/pv9/8AYAJlywAAAAAAAAAAAAAAAAAAAAAAI6J3gAXS5KOIf7T8A6XqldcVZE2vNZPT0+do9WqZ9u3O9kw2lXzyTdfmjL1bhm9c9W5TGZj0z9KNqa/fMTR+7Kwblu1sX7rl1244cY8J/ejqeycr71iUXJ48J8Y/eoAjkkAAAAAANW5WdFjiDk71nToo512ceb1mO3zlv16Yj2zTt720jJZuzauU3KeMTr7mO9ai7bqt1cJjT3qCDYOUfRv7P8dazpNNHMt2MqrzUbdVur1qP4aoa+65buRcoiunhMauQ3Lc265oq4xOgA9vAAAAAAAAAAAAAAAAADJcLaTe17iXTNEsb+dz8u1jUzHZNdcU7/F8mYpjWX2ImZ0hfHya9Ajh7kX4ex6qObey7Hp13frmb08+N/ZTNMe5I7qxMeziYtnFx6Ios2aKbdumOqmmI2iPqh2uc3rk3blVc9c6rpboiiiKY6gBjewAAAAABFnlUcTTw1yNar5q5zMnVObp1np/2m/P/wD44r+CU1RPLo4j9K4p0Thezc3t4GNVlX4iejzl2dqYnximjf8Abb+zLHTZVNM8I3+5qZ13orFU+z3q4AL4qQAAAAAAAAAAAAAAAAAAAAAAAAAAAAynDWh5mvalTh4kbRHrXbsx6tunvn7o7Xn0bTcrVtRtYOHb5925PXPVTHbVPdEJy4Z0TE0HTKMPGjerru3Jj1rlXfP3Q0s3LixTpHrStvJXk1Xti9z7m61Txntnsj69kex2aBo+FomnUYWFb2pjprrn5VdXbVM97IArlVU1TrPF3WzZt2LcW7caUxuiIAHlkAAAAAAAAAAAAAAAAGtcd5vmsO3hUT616edX+jH+v2NkmYiN56IRtr2b6fql7Iid6N+bb/Rjq/r72zi0c6vXsQHKLM6DF5kca93s6/L2vCAlHOwABIfIB+W1/wDUbn89CPEh8gH5bX/1G5/PQM+N+LSnoB7TbV+LuHIzaas7BoiMmI3roj/M/wBftaFMTEzExMTHRMSmVqHG2gRcpr1PCo2riN71umPlR9KPHvaGVj/npT2y9o82Ys3Z3dU/RpICOWMAAVtWSVtTOyfz+z6uWfaX/pv9/wDYAJlywAAAAAAAAAAAAAAAAAAAAAAABsnJlrs8N8d6Tq9VfMs2siKb87/5VXq1/wAMzPuXXjpjeFBFz+SDW/7QcnOjZ9dXOvRYixent59v1Jmfbtv71O5V426i/HhPzj6rjyUyd9difGPlP0bYApq6AAAAAAAAK0+Vbo/ovGGn6xRRtbz8XmVz33Lc7TP7tVH1IaWk8qLSvTeTqjUKaN69Oy6Lk1d1FfqTH11UfUq26Tyfv9Ng068ad3u/TRzXlBY6HOq04Vb/AH/rqAJpCAAAAAAAAAAAAAAAACW/JH0X8MctumXaqOfa02zeza4/Rp5lM+6uuhEi0fkHaP6/E/EFdHVFnDtVfvV1x8LbQ2nd6PFrnu09+5t4NHPyKY/e5acBQ1tAAAAAAAAH5ycs3EP9qeVLiHW6bnnLN7Nrox6t+u1R6luf3aaZXw5X9fnhjkx4i1ymvmXcfBuRZq7rtccy3/HVS/OBZeT1n17s+H1n6IPbFz1bftAFmQYAAAAAAAAAAAAAAAAAAAAAAAAAA5W6K7lym3bpmuuqYpppiN5mZ6ohxSNyTcORXV+H8y3vTTM04tMx1z21+7qj3+DDfvU2aJrlK7G2Vd2rl041vr4z2R1z++ts/APDVGgabz71NNWffiJvVdfNjsojwjt759zZQVa5cquVTVVxl+h8HCs4NinHsxpTT+9fGesAeG0AAAAAAAAA8epapp2m0c/PzbGPE9UV1xEz7I65fYiZnSHi5dotUzXXMREdc7nsGmahyj6Dj704tGTmT2TRRzafrq2n4MHlcqGTVv6LpNmjum5dmr7IhtUYN+r8qu5PK/Y+POlV6Jn/AMYmfjEafFJ4iC5yk8QVfJtYFH6Nqr76pcI5RuIonffEnw8z/qzf4Zf7kbP2gbJifze79UxCJbHKZrdNX43EwLlPhRVTP185lMLlQszMRmaTcoj6Vq7FXwmI+14q2dfp6tW1Y5cbGuzpNyafGJ+kSkYa1pnHHDmdzafTvRa5+bkU8zb3/J+LY7Vy3dtxctV010VRvFVM7xPvatduu3OlUaLFiZ+LmU87HuRVHdMSxXFub6HpFcUztcvfi6ff1z9SPmb4yzfStWmzTO9vHjmR+l87+nuYRJY1HMo8VB29mfecuYjhTuj6/EAZ0KAAJD5APy2v/qNz+ehHiQ+QD8tr/wCo3P56BnxvxaU9APabAAR9xponoGR6bjUbYt2fWiOq3V3eyWtpgy8e1l41zHv0RVbuU7VQizWtPu6ZqFzFu7zEdNFX0qeyUVlWOZPOjhK1bKzemo6OufSj4w8QDUS4raskramdk/n9n1cs+0v/AE3+/wDsAEy5YAAAAAAAAAAAAAAAAAAAAAAAALC+SVrPPwNZ0C5X02rlGXajfriqObX9XNo+tXpIPk9av+CeVLTYqr5trOprxLnT186N6Y/fpoRe2cfp8K5T1xGvu3pTY2R0Gbbq6pnT37lugHMHUQAAAAAAAGE4+0r8N8FazpUU86vIw7lNuNt/X5szR/FEKPr9qP8AHumRo/Gus6ZTTzaMfNu0W4/M50zT/DsuPJS9+Janun6T9FM5WWfw7sd8fWPqwgC5KaAAAAAAAAAAAAAAAALzeRzpEaZyKYmXNO1ep5l/Lq369oq81HwtRPvUZfpHyT6V+BOTLhrS5p5tePpliLkf95NETX/FMoHb9zm2KaO2fkltkUa3Zq7IbOAqSxAAAAAAAAIC8t/XPQeTPT9Ft3Obc1TUKZqp+latUzVV/HNtTJYLy5NZnL5RNJ0Wmre3p2necmN+q5drmZ/hotq+rxse10eJT37/AN+xVdpXOfkVd24ASbRAAAAAAAAAAAAAAAAAAAAAAAAAAZbhPRruu63ZwaOdFufWvVx8yiOufu9swnjGs2sbHt49iiLdq3TFFFMdURHRENV5L9D/AAXoUZd6jbKzYi5O8dNNHzY+/wB/g25XNoZHS3ObHCHdeRexI2dgxduR/Eub57o6o+s989wA0FxAAAAAAAdOblY+Fi3MrLvUWbNuN6q6p2iH2I13Q+VVU0UzVVOkQ7mA4k4t0jQ4qt373nsmOqxa6avf2U+9o3F/KBlZs14mjTXi43VN7quV+z6MfH2dTRqpmqqaqpmZmd5me1LY2zJq9K7u7nNdu8v6LUzZ2fHOn+aeHsjr8Z3eLbNe4+1vUZqt4tcafYno5tqfXmPGvr+rZql25XduVXLtdVddU71VVTvMz7XES9u1RbjSiNHMc7aWXn18/JuTVPfw9kcI9gAyNIAAAAe3S9V1LS7vnNPzb2PO+8xRV6s+2Oqfe8Q+TTFUaSyWrtdqqK7dUxMdcbpZ3E1+uqr++0c6ZneblPX74ZnHv2si35yzcprp74aS7ce/ex7kXLNc0VeHawV49M+ruSuLtm7bnS76UfH9W6jF6Xq1vJ2tXtrd7s7qvYyjUqpmmdJWWxft36efROsADyyiQ+QD8tr/AOo3P56EeJD5APy2v/qNz+egZ8b8WlPQD2mwABguMtK/COmzctU75FiJqo266o7aWdHmuiK6Zplks3arNcV08YQ0M5xppn4P1ablunaxkb10eE/Oj/nvYNB10zRVNMrzZu03rcV08JFbVklbUvsn8/s+rmH2l/6b/f8A2ACZcsAAAAAAAAAAAAAAAAAAAAAAAAHp0vMvadqeLqGPO17FvUXrc/nU1RMfGHmHyYiY0l9iZidYX1wcm1mYVjMsVc61ft03KJ76ao3j4S7mk8hep/hTkr0S7VVvXYszi1R3ebqmiI/dimfe3ZyPItTZu1W56pmPc69j3YvWabkdcRPvAGFmAAAAAAFUvKY030HlRv5EU7U5+LayI26t4ibc/wDlrWoA8rnT4i5oGqUxG8xex659nNqp+2tPcnLvR50R/NEx9fogeUlrpMGZ/lmJ+n1QGA6K5wAAAAAAAAAAAAAAAAyXC+nTrHE2l6TTE1Tm5lnGiI6559cU/e/TemmmmmKaYimmI2iIjoiH58eThp0apy38LY007xbzPSer/ZUVXf8AgfoQqvKGvW5RR2Rr7/8AhP7Hp0oqq7/38wBXkyAAAAAAA6NQyrWFgZGbfna1j2qrtc/m0xMz8IIjUfn15Q2rzrXLTxRmc/n0286rFpmOrazEWuj9xoL0ajl3s/UMnOyJ3vZF2q7cnvqqmZn4y87o9qjo7dNHZGilXK+fXNXaAMjwAAAAAAAAAAAAAAAAAAAAAAAAM3wRpE61xFj4tVO9iifO3/0KeuPf0R72ES1yQaV6Lol3U7lO1zLr2omey3T0fGd/qhq5l7obUzHFYeS2y/8AE9pW7VUejHpVeEec6R7W7xERG0RtEPoKu/QoAAAAAADzalm42nYN3Ny7kW7NqnnVVT9keL7ETM6Q811026ZrrnSI3zLq1vVcLR8CvNzrvMt09ERHTVVPZER2yhfi3iXO4gy+deqm1jUT+KsUz0U+M98+LhxdxBlcQalORe3osUbxYtdlFP8AWe2WGWHDwosxzqvW+TiHKrlXc2pXNjHnSzH/ALd893ZHtnfwAJBSgAAAAAAAAAAABnNG1aYmnHy6ujqpuT2eE/1YMeK6IrjSWxjZNzGr59E/q3oYLQNSnenEv1eFuqfsZ1oV0TROkrni5NGTbiun/gSHyAfltf8A1G5/PQjxIfIB+W1/9Rufz0PDfxvxaU9APabAAAAYjizTvwjo92imne9b/GWu/eOz3x0IxTKi/izB9A1u9bpp2t3Pxlv2T/rvCPzbfCuFh2JkcbM+MfVilbVklbWzsn8/s+qmfaX/AKb/AH/2ACZcsAAAAAAAAAAAAAAAAAAAAAAAAAAWR8kzUvPcLavpUzvOLmU3o8KblO23125+tNSs/ko5/mON9R0+qranKwJqiN+uqiunb4VVLMOa8oLXR59ffpPw83S+T93pMCju1j4+QAhk0AAAAAAIq8qLB9K5NKcqI6cPOtXZnwmKqPtrhKrUOWfCjP5LeIbExvzcSb3/AIcxc/4W7s250eXbq74+bS2lb6XEuU90qZgOrOTgAAAAAAAAAAAAAAAJv8irA9L5Zasmad4wtMv3t+6Zmi3/AMcrtql+Qbhec4i4o1Hb/AxLFjf/AHldVX/praKXtuvnZcx2RHms+y6dMeJ7ZkARCRAAAAAAGk8u+pfgnkc4rzIq5szpt2zTPdVdjzcfGuG7IZ8snP8AQ+RHLx+dt6dnY+Pt37Vec/8ATbOHRz8iinvhgyauZZqnulRsB0JTgAAAAAAAAAAAAAAAAAAAAAAAAAHdhY9zLzLOLZje5euU26I8ZnaFhdPxbWFg2MOzG1uxbpt0+yI2RFyUYHpnFdF+qJmjEt1XZ7ud8mI+O/uTIgtq3da4o7HYPs6wIt4tzLqjfXOkeEecz8ABFOjAAAAAACHeUviWdX1H0DEub4ONVtExPRcr6pq9kdUe+e1unKfr06TonomPXNOXmRNFMxPTRR86r47R7fBDaZ2Zjf8Adq9jlvL/AG9MT/h1me+v6U/WfZ3gCZcrAAAAAAAAAAAAAAAAG06Hnel4/MuT+Ot9f50d7Vnfg5FeLk0XqPmz0x3x2wx3aOfS3sDLnGuxPVPFuaQ+QD8tr/6jc/noRzauU3bVNyid6ao3iUjcgH5bX/1G5/PQjl7xZiblMwnoB7TgAAAA1XlFw/O6fZzaY9azXzap/Nq/12+ttTy6rjRmabkYsxH4y3MR7ez47Md6jn0TS2MS90N6mvslEitqyUxMTMTG0x1wra8bJ/P7PqhftL/03+/+wATLlgAAAAAAAAAAAAAAAAAAAAAAAAADeeQbO9A5V9Ermrai9crsVR38+iqmI+uYXCUZ4PzPwfxZo+fvMej51m7M/o1xP3LzKNyrt6X6K+2NPdP6r1yUua2K6OydffH6ACqrWAAAAAAPFxBifhDQdQwNt/ScW5Z27+dTMfe9o+01TTMTDzVTFUTEqCDIcTYvoPEep4W23o+Zdtbd3NrmPuY92CmqKqYmOtx6qmaapieoAenkAAAAAAAAAAAAABbfyDsTmcMcTZ/N/wAbNs2d+jp5lEz7f8z4rJoI8iDGizyR5t/aOdkaxeq35u07RatUxG/b1T9cpw1DMxdPwb2dm36LGNYomu5cqnoppjrlRNpzz8yvTtWzB0oxqdex3V1U0UVV11RTTTG8zM7REd6MuNOWXQNHuXMTSLU6xlU7xNVFXNs0z+n0873Rt4ow5U+UvUOKsi5gYFVzE0amram1E7VX9vnV+H5vVHjKPUhibIjTnXvd5qntTlTVFU28T/7eUfWW/wCucrvGupV1RZzrWnWpnot4tqI/iq3q+LWsnivijJqiq/xFq1yY6t8y5tHsjfoYUTFGPaojSmmI9iq3c/KvTrXcmfbLLW+JeI7dcV29f1WiqOqacy5Ex8WX0zlJ430+uKrXEOXeiOunI2vRP70S1IeqrNurdVTE+x5ozMi3OtFcx7ZTTwvy65NFyizxHpdu5b6pv4fq1R4zRVO0+6YTFw1xBo/EeBGbo2dayrXVVFM7VUT3VUz00z7VNGU4Z17VeHNUo1LSMqqxep6Ko66a6fo1R2wjMnZFq5GtrdPwWDZ/KfIs1RTkelT8Y8/b71y1cfLuzpt8G8O6bv0X9Qrv7d/m7c0/+omnk64uwuMdAo1DHiLWRb2oyrG/Tar2+NM9cT98Srn5eeVNetcKYPZZx8m7+/Vbj/gRuy7NVOdTTVG+NfkuWXfou4c3Lc6xOmnvVmAXZWQAAAAAAAAAAAAAAAAAAAAAAAAAEqcjGF5vSM3OmNqr96Lcb91Mf1qn6m/MByfYvonB2nUbdNdvzs+PPmao+Ewz6q5VfPvVT3v0Zycxfuuy7Fv/AMYmfGd8/GQBrpoAAAAJ6I3ka9yianOmcKZVyirm3b8eYt+2rr/h3n3Pduia6opjra2blUYePXkV8KYmfcijjXV51riHIy4q3s0z5ux+hHVPv6Z97CgttFEUUxTHCH5pysm5lXq71ydaqpmZ9oA9MAAAAAAAAAAAAAAAAAADYOGMnn2q8Wqemj1qfZ2/H7Uu8gH5bX/1G5/PQgvTL/o2dau77U77VeyetOnIB+W1/wDUbn89DRyKdKte1dOT2R0tNNM8ad3s6k9AMa4gAAAAAIr4nxvRdezLURtHnJrj2VdP3quLc8o1jmarYvx1XLO3viZ+6YVGeNnU82u5Hh9UJy/udJYw6u6v+wASrmoAAAAAAAAAAAAAAAAAAAAAAAAAAvho2V6do+Fm77+kY9u7v386mJ+9Q9dfktyfS+Tfh29NXOn8HWaJnffeaaIpn7FS5WUa27dXZM/H/hbuSdel25T2xHw/5bIApK7gAAAAAAAKXcruP6LyncRWttudn3Ln7887/iaq3/yhbHmOV3Wdo2pueZuR099mjf47tAdZwaufi26u2mPk5JnU8zKuU9lU/MAbTVAAAAAAAAAAAAAAXq8j6xFnkM0y5Ez+Pysm5O/+9mno/dav5QHG1Wq6tVw1p13+4YVe2RVTP+Nejrj2U9Xt37oZHkr12rhDyT9Fzqa4jLuW79vF/wB5cyLsxPuiZq/ZQxVVVVVNVUzVVM7zMzvMyrWLjRXlXL1XVVOnvNv7Rm1jW8Wid9URM+HZ7f3xfAEwpQAAAAADc+R7iavhnjTFuXLk04WXVGPlR2c2qdoq/ZnafZv3te8uTJi7yqaZjUzExZ0a3v0dMVVXrs/ZFLGsH5SmrV61xzp2dcuzcuVaJhxXv2V82Zq/imZ97XpsR97pux2Ss+x8yZxa8erqmJj6owASreAAAAAAAAAAAAAAAAAAAAAAAAAevRbcXtYwrM9VeRbp+uqIfJnSNXu3RNyuKI650WAwLEY2Dj41MbRatU0RHsiId4KfM6zq/UVFMUUxTHCAB8fQAAABGPLTnTVlYGnU1dFFFV6uO/edqfsq+tJyE+U3JnI4zzI33ptRRbp8NqY3+MykNm0c6/r2QpXL7KmxsmaI/PVEfX6NZAWJw4AAAAAAAAAAAAAAAAAAAATr5Nt3z/FE3JneZ06uJ9sV0RKCk0eSzc53E+TRPzMS5Humq3P9WvkxrTErBybuc3M5vbCx4DVdFAAAAAAalyk2t8LEv7fIuTR9cb/8Kmq63KBb5/D81f7O7TV9sfepS94kaXa/Z9VZ5Z1a42LHZNz+wAb6gAAAAAAAAAAAAAAAAAAAAAAAAAAC4XIHfnI5I9CrnfeLd2jpnf5N6un7lPVsfJquc/kpw6ebt5vIv09fX68z96tcqadcOmeyqPlKy8lqtMyqO2mfnCSgFBdAAAAAAAAAVV8p2z5rlRuV7Ux53Cs19Hb109P7v2IuS75VtuKeUXCrinbn6VbmZ7587dj7NkROpbInXCteEOV7XjTOux3yAJFHAAAAAAAAAAAAAALF5+p//wBLOBNAtXOdbxtMnKufp3blUxE+yI/ia+8XD+TdytA06u7O80Y1u1T4U00xTHwh7UfRb6ONO+fjOqrZ9+b2RVVPh7t30AHtpgAAAAACPOU7IpyOJopp6rONat7+PN3n7Uhov45/KnM/Y/kpZLUelqldkz/FmO76wwgDZWAAAAAAAAAAAAAAAAAAAAAAAAAZXhCibnFWlUxO22Xbq+qqJ+5imY4J/K3S/wBZo+1ju+pV4N3ZsROZaif5qfnCegFRfpkAAAAAAQBxVcm7xNqddXbl3dvZzpiE/q863MzrOdNUzMzkXN9/0pS+yY9KqXNftJqmMexT3z8o83jATbkYAAAAAAAAAAAAAAAAAAAAmHyVav8A7659Pdg1T/HSh5L/AJKv5dZ//wCX1fz0MV/1JS+wZ02hb9vylZgBpOnAAAAAAMLxvETwzlTPZNEx+/SpEvBxjzZ4azOdttzafr50bKPsuN+JV4R9VU5YT/Ax/Gv5UADdUUAAAAAAAAAAAAAAAAAAAAAAAAAAWm8lyqqeTOuJmZinULsRvPVHNoVZWe8lCZnk6z95no1a5t/4VlX+Usa4PthYOTM6Z3slLoDnjooAAAAAAACtflZ/llpM/wD+u/8AUrQwm7yt/wAotD/VK/50IunbEnXAt+H1ly/bkaZ9zx+kACVRQAAAAAAAAAAAAACV+E/ycwf91DKMXwn+TmD/ALqGUadXGVPv/iVeMgD4xAAAAAACL+OfypzP2P5KUoIv46if7U5njzP5KWW16yU2T+NPh9YYQBsLCAAAAAAAAAAAAAAAAAAAAAAAAMtwfX5vivSqtt98u3T9dUR97EvboVyLOt4F6Z2ijJt1fVVEvFyNaJhtYVfR5NuvsqifisKAqD9OAAAAAACv/FFE2+JdToq33jLu/wA8rAIQ5SsecbjPOjm7U3JpuU+O9Mb/AB3SuyqtLlUdznf2j2ZqwbVzsq098T5NcATrjoAAAAAAAAAAAAAAAAAAAAmbyULE1cW6rkbRzaMHm+O810/0lDKdPJQo5up6rXPzrHwiqn/VhvzpQmuT1HOz6O7X5LBgNN0sAAAAABheN5iOGcuJ7eZt+/SpRm2/NZl61tEcy5VTtHhK6PH1zmcPVU7/AC7tNP3/AHKf8ZY84vFWp2Zjb+811xHhVPOj4S9Y1X8aqnuj9/FXuV9iZ2fZu9ldUe+I8mIASDnYAAAAAAAAAAAAAAAAAAAAAAAAAAs75KH/APbvP/8Aza5/5NlWJaHyVbXm+TfKr3385qd2rq6vxduPuQHKWf8A4M+MLByZ/wCujwlLQDnbooAAAAAAACuXlb/lFof6pX/OhFOXlcU0RrOgVxvz5x70T3bRVTt9soNdN2H/ANBb8PrLl+3J1z7nj9IAEsigAAAAAAAAAAAAAEqcGfkzhfoz/NLLsHwJVE8L4sR82a4n9+pnGpVxlUcmNL1fjPzAHlgAAAAAAEZ8f0zHE16Z7aKJj92EmI45RqebxDE7T61imfjMfcy2vWSWyp/j+xrYDYWMAAAAAAAAAAAAAAAAAAAAAAAAfYmYmJiZiY6YmHwBY3DvRkYlnIp6rtumuPfG7tYPgLJjL4P025HzbMWp/YmafuZxULlPMrmnsfp3CvxkY1u9H5qYn3xqAPDZAAAAEXctGFNGoYOoRHRdtTaqnxpneP5p+pKLWeUvTZ1HhTImine7jTF+j9n5X8My2sK50d6mVe5V4M5uyr1umN8Rzo/27/lrCEwFofnoAAAAAAAAAAAAAAAAAAAAT75McU2NWysad4rqwOft+3Tv/NCCtPsek5lqzt0VVdPs7U58gV2LfHFyjfbzuFcoj96ifuauTVwhaOTNr+NN32ef0T4A119AAAAAAanyk3YjT8Wxv013Zr+qNv8AiVp5YMGcfiO1mRHq5VmJmfzqeifhzVhuUe/z9Tx8eJ6LdrnT7ap/0hE/Kvpk53DM5Nune7h1+d6unmT0VR9k+5p2r3My9erh+/a2tu7NnK5P1REelT6ceyd//rqhwBPOIAAAAAAAAAAAAAAAAAAAAAAAAAAC2Hk0WvN8lWJX0/jcm9V/Ht9yp623k301RySabMxMRN2/Mb93navv3V7lNEzhbu2PqnuTdymjPpirriYjx01+USkUBz10cAAAAAAABW7ytblM8V6NZifWpwaqpjwm5MR9koVS95V8xPKLgeGk2/8AzryIXUNjRpg2vByzbE6513xAEmjQAAAAAAAAAAAAAEk8nlfO4cpjf5N2uPv+9sTVeTSvfRsi3v8AJyJnr76af6NqalfrSqmZGl+vxAHlqgAAAAADQOUyjbVca59Kxzfqqn+rf2lcqFv/AKhdj/vKZ/h2+9kt+s39mzpkR7fk0kBsrMAAAAAAAAAAAAAAAAAAAAAAAAAAlfkazPO6HlYU1b1Y9/nRHdTVH9Yqb2h7kjz/AEXij0WqqYoy7VVG3Zzo9aJ+qJj3phVvaFvmX5797vXInM+9bItx10a0z7OHwmABorYAAAAPldNNdM01RE0zG0xPbD6BxQFxXpVWi69k4ExPm6audame2iemn+ntiWKS7yr6FOoaRGp49G+RhxM17ddVrt+rr+tES0Yl/prUT19b888ptkTsraFdqI9Cd9PhPV7OAA2lfAAAAAAAAAAAAAAAAAduLYryMiizbj1qp29niTOj7TTNUxEcZZnhfG2pryqo6/Vo+9JPJBkej8omlzNW1Nyqu3PjzrdUR8dmnY9qixZos242pojaGT4bzI0/iHTs6qqaacfKt3Kp37IqiZ+CNuV86qZXzZ9mMWiins4/Va4AWgAAAAB59RyKcTAv5VXVatzV7do6iZ0jWX2mmapiIRtxXkelcQZdyJ3ppr5kfs9H3MRet271muzdpiu3XTNNVM9UxPRMOyuqquuaqp3qqneZ75fEDVVM1ar5btxRbi31RGiv3Eul3NG1rJ0+5vMW6vUqn51E9NM/UxyXuVTQJ1LS41LGo3ysSmZqiI6a7fbHu6/rRCs+Jfi9birr63595S7Gq2TnVWoj0J30+E9Xs4f8gDZV8AAAAAAAAAAAAAAAAAAAAAAAAXA5CLUYvJXoVueiKrNdfX9K5XV96n66nJ1j+icA6Bj9tOm2Od7ZtxM/GZaOfbpu2ujq4Sidp5t3CqtXrU6VU1ax7G0PjrtV7xzap6eyXY5rmYdzFucyv2T2uxbD23j7YxovWZ39cdcT++E9YA1EyAAAAPr44Xq9o5sdc9baw8WvKuxbp9vdCI25tizsjDqyLnHqjtnqjz7lVfKZypyOVK/b50zGPiWbdO/ZG01f8W/vRi3nl5v+kcrGuVxO8U12rcetvtzbVET8YlozqePbptWqaKeERDltq9cv0RduTrVVvnxnfIAzMgAAAAAAAAAAAAADeOS+5vaz7W/VVRVEe3nf0bm0HkyubaplWd/lWed9VUf1b81rnrKxtGnTIq9nyAGNogAAAAADVeUu1ztHsXe2i/Ee6aZ/pDamE46ted4ZyZjrommuP3o+7d6o9aGziVc2/TPei8BtrYAAAAAAAAAAAAAAAAAAAAAAAAAA9Gm5dzB1DHzbXy7Fym5T07b7TvssLiX7WVi2smzVzrV2iK6J74mN4VyS/wAkuq+m8PVYNyre7hV83r6Zoq6afvj3QitqWudRFcdTo32d7S6LKrw6p3VxrHjHnHybmAgnYAAAAAAHyYiYmJiJieuJQryhcOVaFq03LFE+g5EzVZnsonto93Z4eyU1vFremYur6bdwMyjnW7kdEx10z2VR4w28TJmxXr1TxV3lNsGjbOJzI3V076Z7+zwnynqV6GT4k0XM0LUq8PLp3jrt3Ij1blPfH9OxjFlpqiqNY4OAX7FzHuVWrsaVRumJAHpiAAAAAAAAAAAAAAGy6Bg+j2fP3Y2u3I6In5sPFoOm+dqjKv0/i4n1KZ+dPf7GxNS/d/LCx7IwJj+Pcjw8/IAaqwLT8HZ/4U4V0zPmreq9jUTXP50RtV8Yllkc8gWpxlcJXtOqqjzmDfnanuor9aJ/e56RnqOCetVc+iKgB9ZAABrHKFmeZ0qjEpn18ivpj82np+3Zs6M+Ms707XLvNq3t2fxVHu65+vdrZdfNt6dqS2VY6XIiZ4U7/JhgEQt4hvlI4ZnRtQnNxLf9wyKt6do6LVfXNPs7vq7EyPNqWFjajg3cLLtxcs3aebVTP2x4trFyZsV69XWgOUWwre2cSbU7q430z2T5T1+/qV2Ga4u4eyuHtSmxd3uWK95sXtuiuO72x2wwqzUV010xVTwfn/KxbuLeqs3qdKqd0wAPTAAAAAAAAAAAAAAAAAAAAAAA5W6Krlym3RG9VUxER3zK9WFYpxcOxi0dNNm3Tbj2RGyl/AGH6fxzoeHtMxd1CzFX6PPiZ+G66zTyp3xCscoa/St0+I7KLm0bVdMfF1iPv49u/RzLkawiNn7RydnXovY1c01R8e6Y64emJiY3id4HmiZid4mYdkXZ+dET8FaydgV0zrZnWOyeP79zquyvtIx7kRRnUTTPbTvj3cY+LtHCLtHjEuXPo+nH1Si6tm5dM6Tbn5/JbbPKvY92Nacin2zp89H0cZuUR3y667tU9EdENjH2Lk3Z9KObHf5IzaXLvZWHRPRVdJV2U8PbM7vdr4Oy5cinojpq+x0BPRG8rZh4dvEo5tHtntcc23tzK2zf6W/O6OERwiO76z1qYcp2T6XyicQ3t94/CN6mJ364prmmPhDXHq1bKnN1XLzZ3mci/Xd6fzqpn73lWCI0jRbrVPMoinsgAfWQAAAAAAAAAAAAABn+ALvm+JbNP+0orp+G/wByTES8NXvMa/g3OqPPU0z7Jnb70tNe7G9X9rU6XYntgAYkUAAAAAAPJrVn0jR8yxEbzXZriPbt0PWPsPVNXNmJhCg78+x6NnZGPP8AlXKqPqnZ0NxconWNYAB9AAAAAAAAAAAAAAAAAAAAAAAAGw8n+sfgfiSxduVc3Hv/AIm909ERPVPunafZu14eLlEXKZpnrbOFl3MPIov2/WpmJhZIaxyca5+GNAoou175WJtau7z01Rt6tXvj4xLZ1UuW5t1zTPU/SWBm287GoyLXq1Rr+ns4ADG2wAAAAAGM4k0TC13T5xMymejpt3KflW6u+P6IU4k0LP0HPnGzLfqz027tPybkd8T93Yn55NW07C1TDrxM6xTetVdk9cT3xPZLexMyqxOk76VT5S8lbO2KOko9G7HCeqe6fPjHwV4G28XcD5+jzXk4cV5mDG8zVEevbj86I+2Pg1JYLd2i7TzqJ1cSz9nZOz702cmiaavn3xPXAAyNIAAAAAAAAB34WJk5uTRjYli5fvVztTRRG8vkzEb5eqaKq6oppjWZdDMaTpFdyqL2XRVRbjpiiY2mr/Rv3BvANnBqozdaijIyY6aLEdNuifH6U/D2spxvpnnLUajZp9aiObdiO2nsn3f89SNubQomvmUe9fMLkVk28WcvJjSY38zr07Z8vf2NOiIiIiIiIjoiIfQeWUABv3IZq/4P4yjCuVbWs+1Nrw58etTPwmP2k/qkYOTews2xmY9XNvWLlN23V3VUzvE/XC1OhajZ1fRsTU8f/DybVNyI335szHTHtid49z7CUwbmtM09j3APTeAAYziXUI03SL1+KtrtUcy1+lP9Ov3ItnpneWw8dan6bqno1qrezjb0+2vtn7vdLXkRlXOfXu4Qt+ysbobOs8at/kANZJAAPFrWl4er6fcwc61z7VfVPbTPZVE9koV4s4czuHszzd+POY9c/ir9MerVHdPdPgnd59RwsXUcO5iZtii9ZuRtVTVHxjunxbmJmVWJ04wq/KTkxY2zb50ejdjhV9J7vl8FdRtvGnBeZolVeXiRXk6f187b1rX6Ud3j9jUlitXabtPOpnc4dn7PyNn3psZFPNqj498dsADI0gAAAAAAAAAAAAAAAAAAAEg+T3g+m8qmm1zG9GLRdv1dHdRMR/FVStirt5KOn+c4h1nVJp6MfFosRPjcr53/AKaxLQyJ1rUzblznZWnZEef1AGBDgAAAAADFcX5kafwnq+dM7ej4N67HtpomWVaTy55voPJXrdyJ9a5aosx48+ummfhMvtMa1RDNj0c+7TT2zCoYCVdFAAAAAAAAAAAAAAAAcrVc27lNynrpmJj3JntV03LVFyn5NVMVR7JQslnha/6Rw9g3N99rUUT+z6v3MN6N0Sh9r0ejTUyQDAggAAAAAAAEX8cY/mOJMnaNqbnNuR746fjuwjcuU7H2yMPLiPlUVW5n2TvH2y01t0TrTC2YdfPsUz3fIAemyAAAAAAAAAAAAAAAAAAAAAAAAAAzfBWuV6DrlrKmZnHr/F36Y7aJ7fbHX/8AVOtqui7bpuW6ororiKqaoneJieqVb0n8k3EfnrP4BzLn4y3EzjVTPyqe2j3dceG/citpY3OjpaeMcXR+QW3ox7s4F6fRq3091XZ7erv8UhgIJ18AAAAAAAAapxLwLpOrzVfsR6DlT08+1T6tU/nU/wBNm1jJbu1251onRp52z8bPt9Fk0RVHf9J4x7EG69wfrukTVVcxJyLEf51j16dvGOuPfDX1kmI1fhrQ9VmaszTrNVyeu5RHMrn2zG2/vSlras8Lke5zvaX2c0zM1YV3Tuq848vagQSlqHJjhVzNWBqV+x2827RFcezeNvvYPK5NdctzPmcjCvU9nr1Uz9Uxt8W9Rn2KvzKhk8jtsY877POjumJ/X4NJGzXeBOKKJnbTYriO2m/b/wDdu644I4omdo0qr33bf/uZvvFn+aPfCMnYe04nScev/wCtXk10bXj8n3E135eNZsfp36Z/l3ZTC5MNQr6czU8az4WqKrn2814qzLFPGqG1Y5L7XvzpTj1e2Ob89GgO7ExsjLvxYxbF2/dq6qLdM1TPuhLWm8nWg40xVkzkZlXdcr5tP1U7T8W1YODh4FrzWFi2cej6NuiKYn6mpd2pRHqRqs2B9nWZdmJyrkUR2Rvn6R8ZRfw9ycahlTTe1a7GFa6/N07VXJj7Kfj7Ej6Houm6Nj+Z0/Fotb/Kr666/bPXLIiKv5d29607ux0XZHJvA2VGtijWr+ad8/p7NBxuUU3KKqK6YqpqiYmJ6phyGunZjXdKN9f06rTdQrs7TNqr1rVXfT/WGPSJxLpsalp9VNER5+361ufHtj3/ANEdzExMxMTEx1xKVx7vSU7+Lmm2tnfcsieb6tW+PL2ADOhxMvk/6/FzEyeHci569mZv40T9GZ9en3TtP7U9yGmQ4c1XI0PXMTVcb/Ex7kVc3fbnU9VVPviZj3jNYudHXErWjy6Tn42qabj6hh18+xkW4uUT4T2T49j1PacGH4s1WNL0yqqirbIu70Wo7p7avd/Rlb923Ys13rtcUW6KZqqqnsiEXcQ6nc1XUq8id4tx6tqmfm0/17Wtk3ujp0jjKS2Zh/eLutXqxx8mOmZmd5neQEQt4AAAAAD5MRMTExExPXEtC4v5PrGXz8zROZj3+urHnot1/o/Rnw6vY34ZrN+uzVzqJR209k4m1LXRZNOsdU9ceE/vvV0zsPKwcmvGzLFyxeo66K42n/6eLoWC1vRtN1nG8xqGNTdiPk19VdHsnrhGXE3J9qWBzr+mTOfjx08yI/G0+753u+pOY+0Ld3dVulyDbfIjNwNbmP8AxLfd60eMdfjHuhpQ+101UVzRXTNNVM7TExtMS+JBSZ3AAAAAAAAAAAAAAAAAALMeS5p3o3AmVqFVO1ebm1bT30UUxTH8XPS01jkq0z8EcnWhYM082uMSm7XHdVc9eqPrqls6MuTrVMufZt3pciuvvAHhqgAAAAACI/KmzvMcDYWDTO1WVn0zMd9NFFUz8ZpS4rz5WGoec1vRNLir/Axrl+qN/p1RTH/lyy2I1rhI7Jt8/Lo7t6EwEivQAAAAAAAAAAAAAAAAkTk3yPOaJcsTPTZvTEeyYift3R227kyyOZn5WLM9Fy3Fce2mdv8AieLka0tHaNHOx57t7fQGqrAAAAAAAADX+UDG9I4druRG9Vium57uqft+CNEy5+PTl4N/Fq6rtuqj2bxshyumqiuqiuNqqZ2mO6Wxandon9k3Nbc0dkuIDKlgAAAAAAAAAAAAAAAAAAAAAAAAAB2Y1+7jZFvIsXKrd23VFVFVPXEx1S6wne+01TTOscU68FcQ2eINJpverTlWtqci3HZV3x4T/p2M6r9w7rGVoeqW87FneaeiuiZ6LlPbTKc9C1TE1nTbedh1863XHTE9dFXbTPjCuZ2JNmrnU+rLunJLlLTtWx0N6f4tMb//ACjt8+/xe4BoLiAAAAAAAAAAAAAAAAAAAAAANK410z0fKjPs0/ir0+vEfNr/ANW6unOxrWZiXMa9G9FyNp8PFls3Ojq1R+1MCnOx5t9fGPFFo79QxbuFmXMa9HrUTtv3x2S6ExE6xrDl1dFVFU01RpMAA8pW5COKox8irhnNubW70zXh1VT8mv51Hv648d+9M6olm7cs3qL1muq3ct1RVRXTO00zHTExPemvSOUejW+HKcW1XFGsUUxRl83o5sfTj9L4dPg+VVxRTMymNm1Tfrpsa754fvuZXjnW/SLs6Zi172aJ/G1RPyqo7PZH2+xqoIe5cm5VzpdExsenHtxRSAMbOAAAAAAAAAAxGvcN6PrVMznYlM3dtovUercj39vv3R9r3JxqWLzrul3qM21HTzKvUuR90/D2JYG1ZzLtndTO7sQG1eTGztqa1XaNKv5o3T5T7YlXTMxMrCvTZy8e7YuR103KJpn4uhPnGFixf4Y1Kb1m3c5mJdro59MTzaoonaY36pQGncTK+8UzOmmjjvKbk/GxL9NuK+dFUaxu0mABtq0AAAAAAAAAAAAMnwrplWs8TabpNMTPpeVbszt2RNURM+6N5YxKHk06R+EOUWM6une3p2NXe3nq59XqUx/FVPuea6ubTMtfKu9DZqr7IWhpppppimmIppiNoiI6Ih9BFueAAAAAAAACpnlA6j+EOVLU4pne3i028an9mmJq/impbG5XRbt1XLlUU0UxNVUz1REdqjvEOoV6tr2oapXvzsvJuX537OdVM7fFs4selMrByft63aq+yNPf/wAPCA3VrAAAAAAAAAAAAAAAAGW4QyfReIsOuZ2pqr83P7UbfbMMS5W66rddNdE7VUzExPdL5Maxo8XKOfRNM9aaR1YV+nJw7OTR8m7bprj3xu7Wmp0xpOkgA+AAAAAACLeM8T0PiLJpiNqLs+dp/a6/julJpvKZh72cXPpj5Mzarnwnpj7/AK2S1OlSR2Zd5l/TtaMA2VkAAAAAAAAAAAAAAAAAAAAAAAAAAAAGb4Q4iyuHtRi/b3uY9fRfs79FUd8eMdksIPNdFNdM01cGxi5V3EvU3rNWlVO+JWH0nUMTVMC3m4V2Llm5HRPbE9sTHZL1oH4T4izeH86LtiZuY9c/jrEz6tcfdPimjQdXwdawKczBu8+meiqmeiqie6Y7JVzLw6rE6xvpd15Ncp7G2LfMq9G7HGO3vju+MfFkAGktIAAAAAAAAAAAAAAAAAAAAADXuM9M9KxPTbNO96zHrbR8qj/Tr+tpCV5iJjaemEe8T6Z+DtQnzdO1i761vw749yQxLuvoSpXKbZ3Nq+9URundP0ligYrV9VpxomzYmKr3bPXFP+rfppmqdIUu/fosUc+udznrOpU4lM2rUxVfmP3fGWH0PV8zSNVt6jjVzNymfXiZ6LkT1xPteCuqquqa6pmqqZ3mZ7XxvU2aYp5s9apX9pXrl+L1E82aZ1jTq/VYPQNWxNa0y3nYde9FXRVTPXRV20z4vegfhHiHK4f1KMi1vcsV9F+zv0Vx/WOyU26RqOJquBbzcK7FyzXHvpntiY7JhX8zEmxVrHqy7byY5S29sWebXuu08Y7e+O75e56wGktIAAAAAAAAAAADG8Vfkvqv6le/klX9YDir8l9V/Ur38kq/pzZPqVeLkX2k/wDVWP6Z+YAlnNgAAAAAAAAAAABZPyW9G9E4PzdZuU7V6hk82iduu3bjaP4pr+pW63RVcuU26KZqrqmIppiN5mZ7F2OCdHp4f4S0vRoiIqxcaii5t1TXtvXPvqmZ97XyatKdEHt69zLEW4/NPwj9wzADRVAAAAAAAABqvK3qn4H5N9czYq5tc4tVmid+mKrnqRMeyat/cpusd5VOrej8LaZo9FW1eZlTdqiO2i3T1fXXTPuVxb2NTpRquGwrXMxpr7Z/QAbCbAAAAAAAAAAAAAAAAAASZwDlek8PW7czvVYrm3Ps64+E/Bn2hcmmX5vPycKqei7RFdPtp/0n4N9atyNKlWzrfR36o7d4A8NMAAAAAAY/iPC9P0XKxojeuaOdR+lHTHxhkB9idHqiqaKoqjqQoMrxZg+ga9k2Yp2t11eco/Rq6fh0x7mKbcTrGq4W64rpiqOsAfXsAAAAAAAAAAAAAAAAAAAAAAAAAAAAe/Q9Xz9FzqcvAvTRXHyqZ6aa47qo7YeAfKqYqjSWSzeuWa4uW5mKo4THGE48I8V6fxBaiimYsZlMb12Kp6fbTPbDYVcLVy5Zu03bVyq3conemqmdpie+JSJwjyiTTzMTX95jqpyqaemP04j7Y+rtQmVs2afStb47HW+T3Lu1fiLG0J5tX83VPj2T38PBJY68a/YybFF/HvUXrVcb010VRMT74diK4OjU1RVGsTuAHx9AAAAAAAAAAAAAAAAAAGP4gwrOdpd23dqpomiJrprqnaKZjtme508RcQ6XoVjn51/8ZMb0WaOmuv2R2R4z0Il4s4u1LX65tVT6NhxPq2KJ6J8ap+dPwbuLiXLsxVG6O1VeUfKXA2daqs3PTrmPVj6z1fPsh06trEzzrGHO0dVVyPu/qwYLFRRFEaQ4Xk5VzJr51cgD21xmOFuIM7h/O8/jTz7VfRds1T6tcfdPdLDjzXRTXHNqjcz42TdxbtN6zVzao4TCwHD2t4GuYMZWDd326Lluroqtz3TDJK86RqebpObTl4F+q1dp7uqqO6Y7YS5whxpga3TRjZM04mf1ebmfVuT+bP3dftQGXgVWvSo3x8naOTfLKxtKIsZOlF34VeHZPd7m1AI5dwAAAAAAAAAGN4q/JfVf1K9/JKv6wHFX5L6r+pXv5JV/TmyfUq8XIvtJ/wCqsf0z8wBLObAAAAAAAAAAAAN35D9C/D3KRplqujnY+JV6Xe7trfTG/tq5se9btDHks6DOLw/qHEN6javNuxYsTMf5dHXMeE1TMfsJnR+RVzq9OxSttX+lyZpjhTu8wBhRIAAAAAADryb1vHx7mRerii1aomuuqeqIiN5kFYPKW1f8IcotWDRVvb03Gos7dnPq9eqf4qY/ZRgyHEep3NZ4g1DVru8V5mRXemJ7OdVMxHu6mPSlFPNpiHRMWz0Nmm32QAPTOAAAAAAAAAAAAAAAAAA9/D+Z6BrOLlTO1NFyIrn82eifhMpcQoljhbN9P0HFvTO9cU8yv9Kno+PX72G9HWhdr2vVuR4MmAwIQAAAAAAABqPKVgecw7GoUR61mrmV/oz1fVP2tCTHqWLRnYF/EufJu0TTv3T2T7p6UQZFq5Yv3LF2nm126ppqjumGxanWNFh2Ve51uaJ6nWAypQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABlNA1/VNDvecwMmaaJneu1V00V+2PvjpSZw3ygaVqMU2dQ20/Ino9ed7dXsq7Pf9cofGrfw7V7fMb+1Ydj8p8/ZM821VrR/LO+PZ2ez2rI0VU10xXRVFVMxvExO8S+oD0LiLWNFqj0HMrpt77zZq9a3Punq9sbS3vROUvEuxTb1fEqx6+27Z9aj3x1x8URe2bdo3074dP2Xy72dl6U3/wCHV38Pf5xCQR4tM1bTNTo52BnWMjo3mKKvWj2x1x73tR80zTOkrnau271MV26omJ643wAPj2AAAAAAAAA+TMREzM7RHXIPo1/WeMeH9M51NzOpv3Y/y8f16vZvHRHvlo+u8pGo5POtaXYowrc9HnKvXuT90fH2tu1h3rvCN3eru0uVWzNnxMXLnOq7Kd8+Ue2YSZquqafpWP5/UMu3j0dnOnpq8Ijrn3I74m5R797nY+h2psUdU5FyImuf0Y6o9+/uaHmZWTmX6r+VfuX7tXXXcqmqZ+t0paxs23b3175+Dmu2OXmbmRNvGjo6e71p9vV7N/e7Mi9eyL1V7Iu13btc71V11TNUz4zLrBI8FGmZqnWeIAPgAAAARMxO8dEgDd+FOUDN0+KMXVYrzcaOiK9/xtEe2fle/wCtJuj6tp+r43pGn5VF6j50RPrU+Ex1wr278HMysHJpyMPIuWLtPVXRVtP/ANEfkbOt3d9O6V32Hy4zMCItZH8Sjv8AWjwnr8J98LFiMeHuUq9bimzreN56nq8/ZiIq99PVPu29jf8AR9Z0zV7XnNPzLV/aN5pidqqfbTPTCFvYt2z60bnVdl8odn7UiOguel/LO6r3dfs1h7wGumgAAAAAGN4q/JfVf1K9/JKv6wHFX5L6r+pXv5JV/TmyfUq8XIvtJ/6qx/TPzAEs5sAAAAAAAAAAO7Cxr2ZmWMPGom5fv3KbduiOuqqqdoj65dKUfJt4b/DHHP4VvW+di6TR53pjom7VvFEe71qv2Yea6ubTMsGTeixaquT1LG8J6PZ0DhrT9GsbczEsU25mPnVRHrVe+d597KAi5nVzyqqapmqeMgA+AAAAAADQ+XnWvwLyZ6jNFfMvZu2Ha6evn/K/gitviu/lU65F/W9M4ftV704lqci9EfTr6KYnximnf9tks086uG/syx02VTT1Rv8AchUBJL4AAAAAAAAAAAAAAAAAAAAN05M83avK0+qeuIu0R8J+76mlvfw/m/g/WMbL32por2r/AEZ6J+EvNcaxo18u10tmqlLgRMTG8dMDUVIAAAAAAAAR5yiad6PqlObRTtbyY9bwrjr+uNvikNi+KdO/CejXsemne7THPtfpR/Xpj3vdFWktvCv9DeiZ4cJRQE9E7SNpagAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3XXbriu3VVRVTO8VUztMM/pfGnEeBtTRqFd+iPmZEec+M9Pxa8PFduiuNKo1bWLm5OJVzrFyaZ7pmEjafyoXYiKc/SqKp7a7Fyaf4Z3+1ncPlE4cvx+OuZOLP/eWZn+XdDg1K9nWKuEaLNi8utsWN1VcV/wBUeWkp6x+KOHb8b0azhx+ndij+bZkLOdhXv8HMx7n6FyJ+xXUa9WyaOqpNWvtJyY/EsUz4TMeayNMxVG9MxMd8Pqto8f4T/wCfw/Vs/wD5L/8A5v8A3/8A8rH13LdHy7lNO0b9M7PJkavpOP8A4+p4Vr9O/TH3q9j1GyY66vgx3PtKuTHoY8R41a/SE5ZfGfDONvFeq2q57rVNVfxiNmGzuUvR7UTGJiZeRVHVNURRTPv3mfgiYZqdmWY46yisj7QdqXd1uKaPCNZ+MzHwbxqPKVrF7enCxcbEpnqmYm5VHvno+DWNU1zV9UmfT9QyL1M/Mmraj92Oj4McNu3j2rfq0q1m7c2hnbr96qY7NdI90aR8ABmRQAAAAAAAAAAAAAA52btyzdpu2bldu5TO9NVM7THslwB9iZidYbbovKBruBFNvIroz7UdG16PX2/Sjp+vduek8omh5cRTmRewbk9fPp59H1x98Qh8ad3As3OrTwWfZ3LHauDpTFzn09lW/wCPH4rFYOdh51vzmFl2Mijvt1xVt9T0K4Wbt2zci5ZuV2646qqKpiY98M/pvGvEmDEU06jVfoj5t+Ir3989PxaFzZVUepV71zwvtHsVbsqzNPfTOvwnT5ynARjgcp+TTtGdpdq531Wbk0/Cd/tZ3C5RuH7+0X4ysWe3n2udH8Mz9jTrwb9P5VnxuV+x8jheiJ/8tY+e74txGGxOKeHcrbzWsYkb9UXK/Nz/ABbMpj5ONkRzsfItXo76K4q+xr1W6qfWjROWczHv/hXIq8Jifk8XFX5L6r+pXv5JV/WA4q/JfVf1K9/JKv6Z2T6lXi5V9pP/AFVj+mfmAJZzYAAAAAAAAAAW25CuGv7Ocn+JF63zczP/AL3kb9cc6I5tPup26O+ZV55H+GP7VcdYWBdt8/Dsz6Tl93m6Zjo98zFPvXCjojaGpk1/lVrb+TupsR4z9ABqKyAAAAAAAA43K6bduq5XVFNFMTNUzO0REdqlfHmt1cR8Y6prUzM0ZORVNrfri3Hq0R7qYhZrl31/8A8nGfNu5zMnO2w7O3X6+/On3URV09+ypLcxqd01LRyfx9Kar09e6PqANpYwAAAAAAAAAAAAAAAAAAAAAEpcGZ3p2gWJqq3uWfxVfu6vhszKPOTrP9H1avDrq2oyaej9OOmPhv8ABIbVrjSpVs6z0V6Y6p3gDw0wAAAAAAAEZ8c6b6BrNV2inazk73KNuqJ+dH19PvYBKnF2mfhPRrluine/a/GWvGY7PfH3IrbVurWFn2ff6a1pPGNwA9t4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfYmYmJiZiY6YmHwB6qdR1Cm1VZpzsqLdVM01URdq2mJjaYmN+rZ5QfIiI4PdVyuvTnTroAPrwAAAAAAAAA2nkt4WucXcZ4el82qcWmfPZdUfNtUzHO6ezfopjxqh8mYiNZeLlym3RNdXCE8eThwt+BODPwvk2ubm6tMXenrpsx8iPfvNXvjuSi42rdFq1Tat0U0UUUxTTTTG0REdUQ5IyurnTrLnuTfqv3arlXWAPLCAAAAAAA8WvanjaNouZquZVzbGJZqu1+MRG+0eM9Q+xE1TpCu3lPcQ/hDi7H0Kzc3s6Za3uRE9Hna9pn6qeb9cojevWdQyNW1fL1PLq51/LvV3rk9m9UzM7eHS8iUop5tMQ6FiWIsWabcdQA9NgAAAAAAAAAAAAAAAAAAAAAB2Y965j5Fu/anm3LdUVUz3TE7pf03Lt52BYy7fybtEVbd09se6UON55NtR51q9plyrpp/GWt+7tj7J98sV2nWNUXtSxz7fPjjHybkA11eAAAAAAAAEa8daX6Bq05Funaxk71xtHRFXzo+/3pKY7iLTaNV0q7iztFz5VqqeyqOr+nve6KubLbwsjoLsTPCeKJRyuUV27lVu5TNNdMzTVTPXEx2OLaWoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWm8nnhH+z3B8anl2pp1DVYpu1xVHTRa+ZT4bxPOn2x3IT5E+D54u4ytUZFuatNwdr+XO3RVET6tv8AamPqipbeIiIiIjaI6oamTc/LCt7ezNIjHp8Z+kfV9AaisAAAAAAAACGfKi4k9D0DD4ax7m13Pr89kRE9MWqJ6ImPGr+SUyV1U0UVV11RTTTG9VUztER3qacpvEdXFXGuoavEz6PVc83jRPZap6Kejs3jpnxmWfHo51WvYmNi43TZHPnhTv8Ab1NaAb65gAAAAAAAAAAAAAAAAAAAAAAAD16Rm16dqVjMt7726t5iO2O2Pq3eQHyqmKomJTRYu0X7NF61VFVu5TFVMx2xPTDm1Tk61Pz+DXp12re5Y9a3v20T/SfthtbUqjSdFRv2ps3JonqAHlhAAAAAAAAaHyiaR5q/Tqtin1Ls829EdlXZPv8At9rUEzZuNZzMW7jX6edbuUzTVCJdYwL2majdw73XRPq1bdFVPZLYtVaxosOzMnpKOjq4x8njAZUoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOdi1dv37dizbquXblUUUUUxvNVUztERHe4Jp8mrgn07UJ4u1GzvjYtU0YVNUdFd3tr9lPZ4+x4rriinWWvl5NONam5V1Jb5JuEbfB3CGPgVRTOde/HZlcdtyY+TE91MdEeyZ7W3AjZmZnWXP7tyq7XNdXGQB8eAAAAAAACeiN5BGnlEcURoPA1en49zm5urTOPRET0xa2/GVfVMU/tKsN15Z+Kv7V8c5WVYr52Di/3bE26popmd6v2p3n2bdzSkjZo5lK9bLxfu2PETxnfIAypEAAAAAAAAAAAAAAAAAAAAAAAAAB7dEz69N1OzmUbzFFXrxHzqZ64+pLlm5Res0XbdUVUV0xVTMdsT1IWb9ydap5/Er0y9Xvcs+ta37aO2PdP2+DFdp1jVE7Ux+dTFyOr5NtAa6AAAAAAAAAGv8baN+E9P8/Yp3yrETNMR1109tP3x/q2AfYnSdWS1dqtVxXTxhCg2njzRPQ8r8IY1G2Peq9eIjoor/pP2tWbdM6xqtlm9TeoiukAfWUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABytW67t2i1aoqruV1RTTTTG81TPVER2yDPcn/C+ZxfxRjaNib0U1zz793beLVqPlVT9kd8zELjaNpuHo+lY2l6fZizi41uLdqiOyI7++Z65ntlp/ItwPRwbw1E5VETq2bEXMurr5n0bceEb9PfMz4N8R9+5z50jgpW1s77zd5tM+jHx7wBhRIAAAAAAAAjvl94r/s3wRdxsa7zc/U98eztPTTRt+Mr90Tt7aoSHVVTTTNVUxTTEbzMz0RCn/K/xZVxdxpk51quZwbH4jDp7PN0z8r9qd598R2M1ijnVJTZGJ94vxM8Kd8/RpwCQXcAAAAAAAAAAAAAAAAAAAAAAAAAAAAerS827p+oWcyz8q3Vvtv8AKjtj3w8oPlVMVRpKZsLJtZeJayrFXOt3aYqpl2tG5OtW5lyrSb9Xq1712Znsntp+/wCvvby1KqebOip5NibFyaJAHlrgAAAAAAAOrMx7OXi3MbIoiu1cp5tUSinX9LvaTqFeNd3mnrt17fKp70tsXxLpFvWNPmzO1N6j1rVc9k93slkor5st/By+gr0n1Z/eqKB2ZFm7j367F6iaLlE82qmeyXW2Vmidd8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACc/Jw4A89do4y1ex+LtzP4Ot1x8qrqm7MeHVT47z2Q0fkb4DvcacQRVkU10aRiTFWXdjo5/dbpnvnt7o3nu3tnjWLONj28fHtUWrNqiKLdFEbRTTEbRER3NXIu6RzYV/bW0Ojp6C3O+ePdHZ7XYA01UAAAAAAAAAebVM7F0zTsjUM27TZxsa3Vdu1z82mI3kIiZnSEaeUZxhGhcLfgPDu7Z+q0zRVtPTbsdVc/tfJj9ruVhZ7j3iTK4s4pzNayedTF2rm2bczv5q1HRTT9XX3zMz2sCkrVHMp0XzZ2J91sRTPGd8+IAyN8AAAAAAAAAAAAAAAAAAAAAAAAAAAAABzs3Llm9RdtVTRXRVFVNUdkwljh7U7eq6Xbyqdor+Tdpj5tUdf9USM5wdrH4K1OIu1bY17am7+b3Ve77N2O5TzoaG0MbprescYSeETExvHTA1lZAAAAAAAAAAazxvoH4QsTnYlH96t0+tTEf4lP8AWEdJraPx1w9zJr1XCo9Wem/REdU/Sjw7/rZrdfVKZ2dm6fwq/Z5NMAZ04AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM3wRwzqXFvENjR9No9ev1rt2Y9Wzbjrrq8I+M7R2vBo2m5usapj6Zp2PXkZWRXFFu3THTM/dEdcz2QtvyWcEYXBPD9OLb5l7PvxFeZkRHy6vox+bHVHvntYrt3mR3o3aW0KcS3u9aeHmzPCPD+ncMaBjaNplvm2LNPTVPyrlU9ddXfM/6dTLAjpnXeo9VU1zNVU75AB8AAAAAAAAECeU3xpzq7fBun3einm3tQqpnrnrot/ZVP7PilXlL4rxuDuFMnVrvNryJjzeLamf8S7PVHsjrnwiVOtQy8nPzr+dmXqr2RkXKrl25V11VTO8y2ce3rPOlP7Ewukr6erhHDx/R0AN1bAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEg8Aaz6Xifg7Ir3v2I/FzM9NVHd7vsbUhrCyb2Hl28qxVzbturnUyljRdRs6pp1vLs9HO6K6e2mrthr3KdJ1V3aWL0dfSU8J+b2gMSMAAAAAAAACYiqJiYiYnomJAEdcZ8PTp92rOw6N8SufWpj/Kmez2d31NZTTdt0XbdVq7RTXRVG1VNUbxMI24t4euaVenIx4mvCrnonrm3P0Z+6Wxbr13Sn9n53SR0dyd/V3tfAZUsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAO3Ex7+ZlWsXFs3L9+7XFFu3RTvVVVPRERHbLjZt3L12i1at1XLldUU0UUxvNUz1REdsrM8iHJjb4ZxaNc1yxTXrV2ne3RPTGLTMdUfnz2z2dUdu+O5ciiNWlnZtGJb51XHqhkeRfk5scHaZGfn0UXdbyaI87V0TFimf8ALpn7Z7Z8ISKCOqqmqdZUa/frv1zcrnfIA+MQAAAAAAAA43K6LVuq5crpoooiaqqqp2iIjrmZckJ+Ujx56HiVcHaXej0jIoidQrpnpt256Yt+2rrnw/SeqKJrnSGxiY1WTdi3SjLln41q4y4qqrx66o0vD3tYdP0o39a5PjVMfVEeLRgSdNMUxpC/2bVNmiKKOEAD6yAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADNcI6zVpGofjJmcW9tTdju7qvcwo+TGsaPFy3TcpmmrhKaqKqa6IroqiqmqN4mJ6Jh9aVwBrvydJy6/1eqZ/h/o3Vq1U82dFUyLFViuaJAHlgAAAAAAAAHC/at37Ndm9RTXbrjaqmqN4mHMH2J0RnxXw7d0m7N+zvcw66vVq7aPCf6sAmi/at37Ndm9RTXbrjaqmqN4mEc8V8N3dLrnJxoquYdU9fXNvwnw8WxRc13Sn8HPi56Fzj82ugMqVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHOzbuXrtFq1bquXK6opoopjeapnqiI7ZcsTHv5mVaxcWzcv37tcUW7dFO9VVU9EREdsrL8i/JXY4ZtWdc1y3Te1qqnei3O00YsT2R31989nVHfOO5ciiN7Szc63iUc6rj1Q4ciXJbb4ctW9e16zTc1iune1anpjEiftr757OqO2Usgj6qpqnWVIyMi5kXJrrneAPLAAAAAAAAAA8msajh6TpmRqWoX6bGLjW5uXblXZEfbPZEdsj7ETM6Q17lS4xxeC+F7uoV825m3d7WHZmfl3Nuufzaeufq65hUDUMzJ1DOv52berv5N+5Ny7cqneaqpneZbBylcYZnGnEt3U8jnW8aj8XiWJnotW9+j9qeuZ7/CIawkLNvmR3rvsvAjFtel608fIAZkmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+0VVUVxXTVNNVM7xMdcSk3g/XKdWwvN3qojLtRtcj6UfSj70YvRp2ZfwMy3lY1fNuUTvHdMdsT4PFdPOhqZmLGRRp1xwTGPDoep2NWwKMqxO09VdG/TRV3Pc1pjRV6qZomaauIA+PIAAAAAAAA+XKKblFVFdMVU1RtVTMbxMPoCPuLeF68Ln5un0zXjdddvrm3/WPsaqmtpvFfCcV8/N0qiIq667EdU+NP9Gei51SnMLaOvoXZ9vm0YfaommqaaomJidpieuHxmTIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9mj6Zn6xqVnTtMxbmVlX6ubbt0RvM/0jvmeiHv4M4W1ji3V6dN0fGm5X0Tdu1dFuzT9KqeyPjPZutRya8A6PwTp3m8WmMjPu0xGRmV0+vX4R9Gnw+vdiu3Yo8UbtDaVvEp041dnmxPJFyY4PB2NTqGfFvL1u5T613bemxEx002/smrrnwhIoI+qqap1lS79+u/XNdydZAHxiAAAAAAAAAAJ6I3lWPl95Q/7R6nOgaTf30jDufjK6Z6Mm7Hb+jT1R3zvPdtuPlC8o3oFi7wlomR/e7tO2deon/ComP8OJ+lMdfdE989FeG3j2vzSs+xtnaaZFyPDz8gBtrIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyXD2r39Hz4v296rVXRdt79FUf1Sng5VjNxbeTjVxXauRvEx/z1oaZ3hLXq9IyvN3Zqqw7k+vT182fpQx3KNd8I3Pwumjn0etHxScONq5RdtU3bVcV0VxvTVE7xMOTWVwAAAAAAAAAAABgOJ+GsfVaasixzbOZt8r5tfhV/VHWdiZGDk1Y+VaqtXKeuJ7fGO+EyPDrOlYeq43mcq3vMfIrjoqonwllouabpSWHtCqz6Ne+n5IiGX4g0DN0i5NVdPncaZ9W9THR7J7pYhniYngsFu5Tcp51M6wAPr2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA5Wrdd27RatUVV3K6oppppjeapnqiI7ZBxb3yX8mmscaZFORVFWFpFFW13Lrp+Xt1024+dPj1R8J3jkr5FLl7zWr8ZW6rdvoqt6dE7VVd03Jjq/Rjp79upPeNYs42Pbx8e1bs2bdMU0W6KYpppiOqIiOqGrdyIjdSr+0NtU29bdjfPb1R4drG8K8O6RwxpNGmaNiU49inpqnrruVfSqntn/nqZYGnM6qtVVVXM1VTrIAPIAAAAAAAAAAjrlq5Q7PB2k+hYFdFzW8uifM09fmKerzlUfZHbPhEsvyoccYHBGgzl3YpvZ16Jpw8bf/ABKu+e6mN95n3dqpGuapn61q2Rqmp5FWRl5FfPuV1dvdEd0RG0RHZENixa506zwTWydm/eKuluR6MfH9HlyL13Iv3L9+5Xdu3Kprrrrq3qqqmd5mZnrmZcAby4gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANl4N4inTbkYeXVM4dc9FX+znv9iRaaqa6YqpqiqmY3iYneJhCra+DeJZw6qNPz65nGmdrdyf8vwn837GG5RrvhEbQwef/Etxv64SAETExvHTAwIEAAAAAAAAAAABxuUUXbdVu5RTXRVG1VNUbxMNL4j4OmOdk6R1ddViZ/ln7pbsPVNU08GexkXLFWtEoWuUV2rlVu5RVRXTO1VNUbTEuKV9d0LA1e3M3qOZfiNqb1Hyo9vfCPtd0DP0muartHnLG/Reoj1ff3S2Ka4qWDGzrd/dwnsYkB7bwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOdi1dv3qLNi1Xdu11RTRRRTM1VTPVERHXKZuTfkPzM7zWo8XVV4WNO1VOFRO16v8ATn5keHX7HiuumiNZa+Tl2sannXJ0RtwVwfr3F+oeiaNhzXTTMedv1+ratR31VfdG8z2QstyacmGh8G26cqYjUNWmPWy7lPyPC3T82PHrnv7G4aPpmn6Pp9rT9Lw7OJi2o2otWqdojx8Z75npl7GlcvzXujgqWdta7k6007qfn4gDCiQAAAAAAAAAAABr3H/FumcHaDc1PUK4quTE04+PFW1d+v6MeHfPY7eNuKdK4R0O5quq3dqY9W1ap+Xer7KaY/5261SOPOK9T4w165qupVRT0cyxZpn1LNHZTH3z2yzWbU1zrPBK7M2bVlVc6rdRHx7nn4v4i1PinXb+sard5967O1NEb8y1RHVRTHZEf1nrliAb8RpuhdKaYopimmNIgAfXoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABtvB/E/okU4Go1zOP1W7s/5fhPh9n2b9ExVETExMT0xMIUbTwhxNVg8zBz6pqxZnai5PXa/rH2MNy3rvhD52BztbluN/XCQh8oqproiuiqKqao3iYneJh9YEEAAAAAAAAAAAAPldNNdM010xVTMbTExvEw+gNU17g3HyOde0yqMe71+an5FXs7vsaRqGDl4F+bOXYrtV9m8dE+MT1SmJ05uJjZlibGVZovW57Ko/52ZabkxxSeNtK5b3V74+KGhuet8FV073dKuc6OvzNyen3T/X62o5WNkYt6bOTZrtXI66a42lmpqirgm7OTbvRrRLqAemcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABtPBPAPE3F16n8F4FVOLvtVl396LNPf63zvZTvL5MxEay8XLlFunnVzpDVm9cn/JdxLxdNGRRZ/B+mzPTl5FMxFUfmU9dfwjxTZwFyN8N8Peby9TiNZ1Cmd4rvUbWqJ/No6Yn21b+5JcRERERG0R1Q1bmT1Uq9mbeiPRx49s/SPNqXAPJ5w5wdZirAxvP5007V5l+Iquz3xHZTHhHv3bcDVmZmdZVu5dru1c6udZAHx4AAAAAAAAAAAAGD424p0rhHQ7mq6rd2pj1bVqn5d6vsppj/nbrdXHnF+kcHaLVqGp3Ym5VExj49M/jL9XdHh0xvPVCpvHXFur8Ya1VqWq3Y6I5tmxR0W7NPdTH2z1yzWrM1754JXZuzKsqrnVbqI+Pg+8ecW6rxjrlep6nc2pjemxYpn1LFH0Y++e36mvg34iIjSFzoopt0xTTGkQAPr2AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2PhTiW7pdVOLlTVcw5n2zb8Y8PBIuPetZFmi9YuU3Ldcb01UzvEwhdmeGtfydHvc3pu4tU+vamfjHdP2sVdvXfCLzdnxd9O3x+aUh59OzcbUMWnJxbkXLdX1xPdPdL0NdX5iaZ0kAHwAAAAAAAAAAAAefPwcTPs+Zy8ei9R2c6OmPZPXD0A+xM0zrDSNY4Irp513S7/Oj/ZXZ2n3Vf1+tqWbh5WFem1l2Llmvuqjbf2d6ZHVlY9jKtTaybNu7bn5tdO8MtN2Y4pOxtS5Rur3x8UMjf9V4JxL29en3qser6FfrUfX1x8Wp6poOqadvVkYtU24/zKPWp+uOr3s1NcSl7OZZverO/sYwB6bQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAO7DxcnMyKMbDx72Rfrnai3aomuqqfCI6ZSXwhyJcV6xzL2q+b0XFnp/HevemPCiJ6P2ph5qrpp4ywXsm1YjW5Voi5uHBfJvxZxVNF3A0+cfDq//wAvK3t2tvDo3q/ZiVhuDuSfg/hzmXowfwlmU9PpGZtXtP5tPyY8Ojfxb5HRG0NavJ/lQOTt+OFin2z5Iu4J5FOGdE83k6vvrWbT0/jqebYpnwo7f2pn2Qk+1botW6bdqimiimNqaaY2iI7ohyGtVXNXFX7+Tdv1c65VqAPLCAAAAAAAAAAAAAANR5SuPNJ4I0zz2XMZGddpn0bDpq2queM/Rp8fq3Yjla5T9O4OsV4GF5vN1uun1bO+9FjfqqubfXFPXPhHSq/req6hrWp3tT1TKuZWXfq51dyvt8IjqiI7IjohsWrE1b54JrZuyasjS5d3U/P9Hq4t4j1binWbmq6xkzevVdFFMdFFqnfoppjsiP8AWd5YgG7EaboW+mmmiIppjSIAH16AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAe7RdVy9Kyov4tfRPy6J+TXHdKStB1rD1jH59irmXaY/GWqp9an+seKJ3bi5F/FyKL+PdqtXaJ3pqpnph4roippZeFRkRrwq7UzDWuGOKbGoRTjZs02Mrqieqm57O6fBsrWmJjirl2zXZq5tcAD4xAAAAAAAAAAAAAAAAMTqfDuk6hvVdxYt3J/wAy16tX9J98NZ1HgfKt71YGVRep+hc9Wr6+qfg3we4rqhtWs29a4VbkQZ+mZ+BO2XiXbUfSmN6frjoeNNdURVE01RExPXEsRn8N6NmbzXh02q5+da9Sfqjo+DJF3tSVra8f9yn3IrG653As9NWDnRPdTep++P6MFm8M61i7zVhV3afpWp5/wjp+DJFdMpC3mWLnCphxyuUV265ouUVUVR1xVG0uL02QAAAAAAAAAAAAAAAAAAAAAAZPRuH9d1mqI0nSM7N3nbnWbFVVMe2YjaPe33QOQ7jTUObXn04elW56Z8/e59e3hTRv9UzDzVXTTxlr3cqzZ9eqIRe5W6K7ldNFumquuqdqaaY3mZWR4e5BOG8Tm3NZ1HN1OuOuijaxbn3RvV/FCR+H+F+HdAoinRtGw8OYjbzlFuPOT7a59affLBVk0xwRV7b1ijdbiavhH79irnDPJXxtr0012tIuYVir/OzZ8zEePNn1p90SlThbkC0fFmi9xDql/UK46ZsY8eat+yZ6apj2c1M4wVZFdXDch7+2sm7upnmx3ebF8P8AD2iaBj+Y0bS8XBo22mbVuIqq/Sq66vfMsoDDM6oqqqap1qnWQAfAAAAAAAAAAAAAAAHk1fUsDSdPvahqWVaxcWzTzrl25VtEf1nw65H2ImZ0h656I3lCnK7yyWcCL2icJXqL2X00Xs6NqqLXfFvsqq8eqPGerTuVnlezuI5u6ToE3cHSJ3prudV3Jjx+jT4dc9vXtEUtu1j9dSzbO2LppcyI9nn5OeReu5F+5fv3a7t25VNVdddU1VVVT0zMzPXLgDbWQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAbXwzxbdxObi6lNV6x1U3euqj298fFqg+TTE8WK9YovU82uEz41+zk2ab1i5Tct1xvTVTO8S7ETaJrObpN7nY1ze3M+vaq6aav6T4pE0HXsHV7e1qrzd+I9azXPrR7O+GvVbmlXcrArsb430sqAxtEAAAAAAAAAAAAAAAAAAAB15GPYyKOZkWLV6nuroiqPixOXwtomRvPonmqp7bVU0/Dq+DND7EzHBkou10erMw0/K4Fx6unFz7tHhcoir7NmLyeCdVt9Nm5jXo7oqmmfjH3pEHuLlUNujaWRT16oqyOHNbsb8/TrtW30Nq/s3Y+/iZVj/Hxr1r9OiY+1Mo9RensbFO1649amEKCZL2Fh3t/PYli5v8ATtxP2vJd0HRrm/O03Gjf6NHN+x96aOxnp2vR10yiYTTo/Jda1uIuYukTbszP+NXdroo93T0+6JbTp3IRoVMc7Oyaq5nrotzVtHsnnR9hN+iCdt41PHX9+1W0Wc/+A/Bs1TNV/U4id9oovRG31xLq/wDgDwd/2lr3/j2v/lPn3ih8/wAcxe/3K0Cy/wD8AeDv+0te/wDHtf8Ayn2nkB4NiqJnUddmInqm/a6f/wCM+8UH+OYnbPuVnFobXIVwPRXFVVWq3I+jVkxt8KYevH5FeT+3tz9Nyb207+vl3I38PVmHz7zQ8zt7Fjt936qpi32NyVcn+PEeb4ax6to2/GXblf8ANVLLYnBnCOJO+Pwxo1FX0vQrc1fXMbvk5VPYxVcoLP5aZ+Cltuiu5XFFuiquqeqKY3mWawOD+K8+Y9D4b1a7E/OjEr5v1zGy6GNjY2LRzMbHtWKe63RFMfB3PE5U9UNavlDV+Wj4qnaZyOcf5sxNekW8SifnZGTRHwiZn4Np0ryfNYuc2dU4gwcaO2Me1Ven48xYgeJyK5alzbmVVw0jwjz1RLpHILwnjc2rUM3Us+uOuPOU26J91Mb/AMTc9G5P+C9ImJweG9Ppqp6q7tvztUeyqveWzjHNyqeMtG7m5F3165fKaaaaYppiKaYjaIiOiIfQeGqAAAAAAAAAAAAAAAAAAAADjcrotW6rlyumiiiJqqqqnaIiOuZlCvKfy242F53S+D6reVkbTTXnzG9u3P5kT8ufGfV9r1RRNc6Q2MbEu5NXNtwkHlC490LgvB85qF7z2ZXTvYw7UxNy54z9Gn86fdvPQq/x/wAca5xnqHn9Tv8AMxqKt7GJbmYtWvd21fnT0+yOhr+oZmXqGbdzc7Ju5OTdq51y7cqmqqqfGZdDet2Yo39a4YGy7WLHOnfV2+QAzJMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcrdddq5Tct11UV0zvTVTO0xLiA3Th7jKqnm4+rb1R1Rfpjpj9KO32w3SxetX7VN6zcpuW6o3pqpneJQuyGjaxnaVd5+Ld2omfWt1dNNXu+9iqtRPBFZWzKa/St7p+CWxgtB4nwNT5tq5VGNkz0ebrnoqn82e32dbOsExMcUHctV2qubXGkgD4xgAAAAAAAAAAAAAAAAAAAAACRuBeC7fmbepaza59VUc61j1R0RHZNUds+H1+GE5NdEp1TWZysiiKsbE2rmJjoqrn5MfCZ93ilxjrq6oat+7MejD5ERTERERER0REPoMTTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAebUs/C0zCuZuoZVnFxrUb13btcU00++QiJmdIelrXHPHHD/B2H53VsuJyKqd7WLa2qu3PZHZHjO0Iq5RuXOZ85p/BtvaPk1aheo/8uiftq+rtQdn5mXn5lzMzsm7k5F2rnXLt2uaqqp8Zls28eZ31J7C2JXc9K/ujs6/0blyj8puv8ZV1Y9dfoGl7+rh2ap2q8a6vnz8PDtaMDcppimNIWm1Zos08yiNIAH1kAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGw6FxXn6fzbWRM5ePHRtXPrUx4T90/Brw+TETxY7tqi7HNrjVLej6zp+q2+di3o5+3rW6uiun3f0ZBC1uuu1cpuW66qK6Z3iqmdpifa2nReM8rHim1qNHpNuOjzlPRXH3T8GGq12IXI2XVTvtb+5IA8mmang6la85h5FFzo6aeqqn2x1vWxaaIqqmaZ0mNJAHx5AAAAAAAAAAAAAAAAAATFybYMYfCuPXMbV5Mzeq9/RHwiGyvNpVn0fS8THjo81Yoo+qmIelrTOsouudapkAHkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAnojeQHyqqmmmaqpimmI3mZnoiEecc8r3C3DfnMbGvfhfPp6PM4tUTRTP51zqj3bz4IC475SOJ+Lqq7Wbl+jYEzvTh4/q29uzndtXv6O6IZqLFVSUxNkX8jfMc2O2fJNvKBy06BoXnMPQ4p1nUI3jnUVf3e3PjXHyvZT9cK/8YcXa/xZm+k61n13qaZ3t2KfVtWv0aY6I9vXPbMsCNyi1TRwWjE2dYxY1pjWe2eIAyN8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABzsXbti7Tds3K7dynpiqmdphtGjcaZePEWtQt+k0R8+norj7p+DVB8mmJ4sN2xbvRpXGqXNK1jTtTp3xMmmqrttz0VR7pe9CtFVVFUVUVTTVE7xMTtMNh0ni/U8PajImMy1HZcnar97+u7DVa7ERf2TVG+1OvdKSRhNK4o0nP2pm96Ndn5l7o+qepm4mJjeOmGKYmOKLuWq7c6VxoAPjGAAAAAAAAAAAAAAsOPJo9+MrScPJid/O2KK/rpiXrayJmNAAAAAAAAAAAAAAAAAAAAAAAAAAAHi1jVtM0bDqzNVz8bCsR8+9cimJ8I3658IH2ImqdIe1xrqpooqrrqimmmN6qpnaIjvQ3xhy9aPh8/H4awbmpXo3iMi/E27MeMR8qr2er7UMcX8d8UcVV1Rq+qXaseZ3jGtfi7NP7MdftnefFnox6quO5L42xci9vr9GO/j7lg+NeWXhXQYuWNPuzrWbT0RRjVR5qJ8bnV+7zkGcccpvFXFfPsZOZ6Hg1dHomLvRRMfnT11e+dvCGlDaos00LFi7Lx8bfEaz2yAMqRAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGQ0zWtT06YjFyq6aI/y6vWp+qfuY8JjV5qoprjSqNW86Zxxbq2o1HFmie25Z6Y+qen4y2bT9U0/UKd8TKt3Z+jE7VR7p6UQPtMzTMVUzMTHVMMU2ongjruy7Ve+jcmoRdp3FGsYW1MZPn7cfMvRzvj1/Fsen8cYte1Odi3LM/Stzzqfq64+LHNuqEbd2bfo4Rr4NuHiwNW03O29FzbNyqeqnnbVfVPS9rxpo0aqaqZ0qjQAfHkAAAAAAABLvJfqFOZw1RjTVvdxKpt1R282emmfjMe5tSF+BdbjRdbouXapjFvR5u94R2Ve6fhumemqKqYqpmJpmN4mJ6JYK40lH36ObV4voDywgAAAAAAAAAAAAAAAAAAOvIv2cezVeyL1uzapjequuqKaYjxmQdg0TiPla4H0XnUTq0ahep/ysGnzu/7XRR/EjPiXl/1S/FVrh/R7GFTPRF7Jq87X7YpjaIn285kps11dTfsbMyb3q06R37lhbldFuiqu5VTRRTG81VTtEQ0binlZ4K0DnW6tTjUcin/JwYi7Pvq35sfXv4KycScXcS8RVzOs6zl5dEzv5qa+bbj2UU7Ux9TBtinGj80pnH5P0xvvVa90eaXeLOXfiPUOfZ0LEsaRYnoi5P4299cxzY+r3ou1bU9R1bMqzNUzsnNyKuu5fuTXPs6eqPB4xsU0U08ITdjEs48aW6dP32gD02AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABksHXNWwtosZ13mx82uedT9UsaPkxq81UU1xpVGrb8LjnLo2jMw7V2PpW5mifv8AuZvD4x0a/tF2u7jVf95RvH1xujUeJt0y0rmzbFfCNPBMeJn4WXH91y7F7woriZ+p6EKR0TvD34ms6ri7RYz8imI6qZrmY+qeh4mz2S069kT+Sr3pcEcYvGmsWtouxj347Zqo2n4bMpjcd256MnTqqfG3c3+ExH2vM26oalezcinhGrcxr2Pxjot35dy/Z/TtzP8ALuyFjXdHvfI1LG6eyqvm/bs8zTMdTWqxrtPGmfcyI4Wb1m9G9q7buR301RLm8sUxoN95PuL6cWijSdVubWfk2L1U9FH5tU93dPZ7OrQh8mNXiuiK40lYaJiYiYneJ6pfUP8AC3GOoaNFOPdj0vDj/Lqn1qI/Nns9nV7ElaHxFpOsU0xiZVMXZjps3PVrj3dvu3YaqZhoXLNVDLAPLEAAAAAAAT0RvIAxefxHw9gb+na7pmLt2Xcuij7Za7qPKtwBg7xc4isXao7LFuu7v76aZj4vsU1Twhmox7tfq0zPsbsIj1Pl84Usb04OnapmVR1TNFFuiffNUz8Grap5QmqV7xpfDuHj905N6q78Keb9rJFiuept29k5df5NPFYVxuV0W6JruVU0UxG81VTtEKnavywcfahE0xq9OHbn5uLYpo/imJq+LT9V1nV9Wuc/VNUzc6rvyL9Vz7ZZIxauuW9b5P3Z9eqI+PktzrfKJwTo+8ZvEeDNcddFivz1UT3TFG8x72i67y/6Bj86jR9Hzs+uOqq9VTZonxj5U/CFcRlpxqI4pG1sLGo9eZn99yT9f5cONNQ51GDVh6Vbnq8xa59e3jVXv8IhoGs63rGs3vO6tqeZnVxO8TfvVV7eyJno9zHjNTRTTwhKWcWzZ/DpiAB6ZwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH2JmJ3idph6LWoZ9rbzWdk29vo3ao+95gfJpieLKW+Idat/J1G/P6U877Xpt8W67T15dNf6Vqn7oYIfObHYxTj2Z40x7mzWuNtXoiYqt4lzxqtz0fVMO21x1qVNcTcxcWqPzYqpn7ZaoPnMp7GOcKxP5YSfpPLRxJp/Nppo89bj5l27z4+uYmYZqPKD1nbp4ewJn/AHtaFh46GjsYp2XiTOs0fNNX/SE1n/8AD2B/41Z/0hNZ/wDw9gf+NWhUOho7Hz/CsT+T5pinygeJenbRdIju6Ln/ALnlu8vnGddO1OFolud+unHub/G5KJx96Gjseo2ZiR+SEl5HLfx5d35mTg2N5+Zi0zt+9uxuVyt8oWRvFXEVyiJ36LePao238Yp3aMPvR0djJTg41PC3HuhseZx3xnlxMXuKdX2nrijKroifdTMMNm6jqGbO+bnZWTPX+Nu1V/bLyj1FMRwZqbVFHqxEAD6yAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//Z" style="width:42px;height:42px;object-fit:contain;border-radius:50%;background:#000;flex-shrink:0" alt="DCL">
+    <div>
+      <h1>School Feeding Programme</h1>
+      <p style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:2px">School Snacks &amp; Kitchens Projects · DCL · North Lebanon &amp; Akkar</p>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+    <span class="badge">123 schools</span>
+  </div>
+</div>
+
+<!-- SFP metrics strip -->
+<div class="metrics" id="metrics-sfp">
+  <div class="metric">
+    <div class="metric-label">Total locations</div>
+    <div class="metric-value">124</div>
+    <div class="metric-sub">123 schools · 1 building</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Activated</div>
+    <div class="metric-value green" id="m-activated">—</div>
+    <div class="metric-sub" id="m-activated-sub">—</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Snacks — students</div>
+    <div class="metric-value" id="m-snack-total" style="font-size:20px">—</div>
+    <div class="metric-sub" id="m-snack-sub">—</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Kitchens — students</div>
+    <div class="metric-value amber" id="m-kitchen-total" style="font-size:20px">—</div>
+    <div class="metric-sub" id="m-kitchen-sub">—</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Kitchen Expansion</div>
+    <div class="metric-value" style="font-size:20px;color:#22d3ee">5,040</div>
+    <div class="metric-sub">+9 new schools · 2 central kitchens</div>
+  </div>
+</div>
+
+<!-- CK metrics strip -->
+<div class="metrics" id="metrics-ck" style="display:none">
+  <div class="metric">
+    <div class="metric-label">Community Kitchens</div>
+    <div class="metric-value" style="color:#22d3ee">2</div>
+    <div class="metric-sub">TVET Zgharta · TVET Mina</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Total IDPs served</div>
+    <div class="metric-value" style="color:#22d3ee">1,190</div>
+    <div class="metric-sub">Lebanese &amp; Syrian</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Shelter sites</div>
+    <div class="metric-value">9</div>
+    <div class="metric-sub">across North Lebanon</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Lebanese IDPs</div>
+    <div class="metric-value" style="color:#a78bfa">735</div>
+    <div class="metric-sub">3 school shelters · 98 families (Zgharta)</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Syrian beneficiaries</div>
+    <div class="metric-value" style="color:#4e9eff">605</div>
+    <div class="metric-sub">5 sites · TVET Mina</div>
+  </div>
+</div>
+
+<div class="prog-switcher" id="prog-switcher">
+  <button class="prog-btn active" data-prog="sfp">School Feeding Programme</button>
+  <button class="prog-btn" data-prog="ck">Community Kitchens</button>
+</div>
+
+<div class="tab-nav" id="tab-nav-sfp">
+  <button class="tab-btn active" data-tab="overview">Overview</button>
+  <button class="tab-btn" data-tab="schools">Schools</button>
+  <button class="tab-btn" data-tab="kitchenexp">Kitchen Expansion</button>
+</div>
+
+<div class="tab-nav" id="tab-nav-ck" style="display:none">
+  <button class="tab-btn active" data-tab="shelters">Community Kitchens</button>
+</div>
+
+<div class="tab-content active" id="tab-overview">
+  <div class="overview" id="overview-content"></div>
+  <div style="padding:0 32px 24px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#7a8099;text-align:right">
+    Data contact: <a href="mailto:majd@dclngo.org" style="color:#4e9eff;text-decoration:none">majd@dclngo.org</a>
+  </div>
+</div>
+
+<div class="tab-content" id="tab-schools">
+<div class="filter-section">
+  <div class="filter-label">Filter by status</div>
+  <div class="filter-row" id="status-filters">
+    <button class="btn active green-btn" data-filter="activated" data-val="Y">Activated (Y)</button>
+    <button class="btn" data-filter="activated" data-val="N">Not activated (N)</button>
+    <button class="btn" data-filter="activated" data-val="—">Status unknown</button>
+  </div>
+
+  <div class="filter-label">Filter by WFP</div>
+  <div class="filter-row" id="wfp-filters">
+    <button class="btn" data-filter="wfp" data-val="WFP">WFP</button>
+    <button class="btn" data-filter="wfp" data-val="NOT WFP">Not WFP</button>
+    <button class="btn" data-filter="wfp" data-val="WFP But did not join">Out of the program</button>
+  </div>
+
+  <div class="filter-label">Filter by role</div>
+  <div class="filter-row" id="role-filters">
+    <button class="btn" data-filter="role" data-val="Neither">Standalone (neither)</button>
+    <button class="btn" data-filter="role" data-val="Host">Host</button>
+    <button class="btn" data-filter="role" data-val="Guest">Guest</button>
+    <button class="btn" data-filter="role" data-val="Online">Online</button>
+  </div>
+
+  <div class="filter-label">Filter by program type</div>
+  <div class="filter-row" id="prog-filters">
+    <button class="btn" data-filter="actual" data-val="Snack">Snack</button>
+    <button class="btn" data-filter="actual" data-val="Kitchen (Nearby)">Kitchen (Nearby)</button>
+    <button class="btn" data-filter="actual" data-val="Kitchen (Central)">Kitchen (Central)</button>
+    <button class="btn" data-filter="kitchen_status" data-val="converted">Kitchen→Snack converted</button>
+    <button class="btn" data-filter="kitchen_status" data-val="stayed_kitchen">Stayed kitchen</button>
+  </div>
+
+  <div class="search-row">
+    <input type="text" class="search-box" id="search" placeholder="Search school name or CERD…">
+    <button class="btn clear-btn" id="clear-all">Clear all filters</button>
+    <span class="result-count" id="result-count"></span>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <table id="schools-table">
+    <thead>
+      <tr>
+        <th data-col="name">School <span class="sort-arrow">↕</span></th>
+        <th data-col="cerd">CERD <span class="sort-arrow">↕</span></th>
+        <th data-col="wfp">WFP Status <span class="sort-arrow">↕</span></th>
+        <th data-col="role">Role <span class="sort-arrow">↕</span></th>
+        <th data-col="original">Original <span class="sort-arrow">↕</span></th>
+        <th data-col="actual">Actual <span class="sort-arrow">↕</span></th>
+        <th data-col="activated">Active <span class="sort-arrow">↕</span></th>
+        <th data-col="am">AM <span class="sort-arrow">↕</span></th>
+        <th data-col="pm">PM <span class="sort-arrow">↕</span></th>
+      </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+  </table>
+  <div class="no-results" id="no-results" style="display:none">No schools match the current filters.</div>
+</div>
+
+  <div style="padding:16px 32px 24px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#7a8099;text-align:right">
+    Data contact: <a href="mailto:majd@dclngo.org" style="color:#4e9eff;text-decoration:none">majd@dclngo.org</a>
+  </div>
+</div><!-- end tab-schools -->
+
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-name"></div>
+        <div class="modal-cerd" id="modal-cerd-line"></div>
+      </div>
+      <button class="modal-close" id="modal-close">×</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<div class="tab-content" id="tab-kitchenexp">
+  <div class="overview" id="ke-content"></div>
+  <div style="padding:0 32px 28px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#7a8099">
+    Data contact: <a href="mailto:majd@dclngo.org" style="color:#4e9eff;text-decoration:none">majd@dclngo.org</a>
+  </div>
+</div>
+
+<div class="tab-content" id="tab-shelters">
+  <div class="overview" id="shelters-content"></div>
+  <div style="padding:0 32px 28px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#7a8099">
+    Data contact: <a href="mailto:majd@dclngo.org" style="color:#4e9eff;text-decoration:none">majd@dclngo.org</a>
+  </div>
+</div>
+
+<script>
+const DATA = [{"id": 1, "cerd": 672, "name": "Father Semaan Doueihy School", "wfp": "WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 168, "pm": 265, "project": "snack", "host_type": "wfp_host_wfp", "kitchen_status": null, "comment": "After the Ministry of Education issued a decision to open the school on Thursday, Friday, and Saturday, Vera Franjieh School responded to the memo stating that the Father Semaan School building cannot accommodate the number of evening classes required for Vera Franjieh School. Consequently, Vera Franjieh School has switched to online learning while awaiting a response from the Ministry of Education.", "starting_date": "Started for Ab Semaan with Phase 1 (along with green schools, since the hosting of Vera was not finalized)"}, {"id": 2, "cerd": 673, "name": "Vera Frangieh Mixed Public School", "wfp": "WFP", "role": "Online", "host": "Father Semaan Doueihy School", "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "N", "am": 125, "pm": 309, "project": "snack", "host_type": "online", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 3, "cerd": 718, "name": "Khalil Salem School/ Batram", "wfp": "WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "N", "am": 504, "pm": 0, "project": "snack", "host_type": "wfp_host_wfp", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 4, "cerd": 715, "name": "Kfarhizer", "wfp": "WFP", "role": "Guest", "host": "Khalil Salem School/ Batram", "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "N", "am": 425, "pm": 0, "project": "snack", "host_type": "wfp_guest_notwfp", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 5, "cerd": 1392, "name": "Tebbeneh Intermediary School", "wfp": "WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "N", "am": 910, "pm": 298, "project": "snack", "host_type": "wfp_host_wfp", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 6, "cerd": 1629, "name": "Zehriyeh for girls", "wfp": "NOT WFP", "role": "Guest", "host": "Tebbeneh Intermediary School", "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "N", "am": 316, "pm": 0, "project": "snack", "host_type": "notwfp_guest", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 7, "cerd": 389, "name": "Adnan Zaki Darwish School For Boys", "wfp": "WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "N", "am": 352, "pm": 318, "project": "snack", "host_type": "wfp_host_wfp", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 8, "cerd": 392, "name": "Al-Nahda Official for Girls", "wfp": "WFP", "role": "Guest", "host": "Adnan Zaki Darwish School For Boys", "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "N", "am": 346, "pm": 0, "project": "snack", "host_type": "wfp_guest_notwfp", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 9, "cerd": 596, "name": "قبعيت", "wfp": "WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Kitchen (Nearby)", "actual": "Snack", "activated": "N", "am": 166, "pm": 0, "project": "kitchen", "host_type": "wfp_host_wfp", "kitchen_status": "converted", "comment": "", "starting_date": ""}, {"id": 10, "cerd": 568, "name": "Habcheet Mixed School", "wfp": "WFP", "role": "Online", "host": "قبعيت", "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "N", "am": 132, "pm": 0, "project": "snack", "host_type": "online", "kitchen_status": null, "comment": "the students are moving to online learning and not going to another school.", "starting_date": ""}, {"id": 11, "cerd": 779, "name": "Douma Mixed School", "wfp": "WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "N", "am": 65, "pm": 0, "project": "snack", "host_type": "wfp_host_wfp", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 12, "cerd": 0, "name": "Kfarhelda", "wfp": "NOT WFP", "role": "Guest", "host": "Douma Mixed School", "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "N", "am": 0, "pm": 0, "project": "snack", "host_type": "notwfp_guest", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 13, "cerd": 0, "name": "Madame Badra", "wfp": "NOT WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Unknown", "actual": "Snack", "activated": "N", "am": 0, "pm": 0, "project": "unknown", "host_type": "notwfp_host_wfp", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 14, "cerd": 671, "name": "Tony Frangieh Mixed Secondary", "wfp": "WFP", "role": "Guest", "host": "Madame Badra", "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "N", "am": 393, "pm": 0, "project": "snack", "host_type": "wfp_guest_notwfp", "kitchen_status": null, "comment": "The host school is very cooperative and has agreed to start the project immediately, but prefers to obtain formal approval later.\n\nThe visiting school has a storage room available.", "starting_date": "(Toni Frangieh) was operating online and will start on-site classes at Madame Badra’s building starting next Tuesday, 07/04/2026."}, {"id": 15, "cerd": 0, "name": "روضة البداوي الاولى", "wfp": "NOT WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Unknown", "actual": "Snack", "activated": "N", "am": 0, "pm": 0, "project": "unknown", "host_type": "notwfp_host_wfp", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 16, "cerd": 1520, "name": "Roudat El-Badawi", "wfp": "WFP", "role": "Guest", "host": "روضة البداوي الاولى", "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "N", "am": 202, "pm": 0, "project": "snack", "host_type": "wfp_guest_notwfp", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 17, "cerd": 0, "name": "ثانوية برقايل بنات", "wfp": "NOT WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Unknown", "actual": "Snack", "activated": "N", "am": 425, "pm": 0, "project": "unknown", "host_type": "notwfp_host_wfp", "kitchen_status": null, "comment": "The director of berkayel hariri Hariri informed me if the snacks are distributed, the full quantity will be distributed, as there is no storage room available in the secondary of berkayel.\nShe also clarified that the school consists of two sections (boys and girls) within the same building and under the same name.\nThe number of students is as follows:\nsecondary of berkayel for Boys  : 176 students \nsecondary of berkayel for girls: 425 students . Classes in secondary school start from grade 7.Secondary for girls from grade 7 to grade 9 :151\nSecondary for boys from grade 7 to grade 9 :70/berkayel hariri closed on thur Fri sat Mon for Easter \n\nBerkayel hariri(shelter) moved to sanawiyet berkayel(not a shelter ) (SECONDARY school)\nThe 2 schools will open on different days so the students do not attend in the same days\nAm : \n- Mon tue wed:sanawiyet berkayel\n- Thur Fri sat+ one day online: berkayel rafik hariri\nPm:\nNo pm shift in the new school so berkayel hariri pm attend from Mon to Friday on pm\n", "starting_date": ""}, {"id": 0, "cerd": 0, "name": "ثانوية برقايل صبيان", "wfp": "NOT WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Unknown", "actual": "Snack", "activated": "N", "am": 176, "pm": 0, "project": "unknown", "host_type": "notwfp_host_wfp", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 18, "cerd": 564, "name": "Rafic el Hariri Mixed School", "wfp": "WFP", "role": "Guest", "host": "Multiple hosts", "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "N", "am": 337, "pm": 77, "project": "snack", "host_type": "wfp_guest_notwfp", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 19, "cerd": 0, "name": "ثانوية العيون الرسمية", "wfp": "NOT WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Unknown", "actual": "Snack", "activated": "N", "am": 253, "pm": 0, "project": "unknown", "host_type": "notwfp_host_wfp", "kitchen_status": null, "comment": "Needs approval before distribution ", "starting_date": "2026-04-07 00:00:00"}, {"id": 20, "cerd": 601, "name": "Rafic el Hariri Public School - Tekrit", "wfp": "WFP", "role": "Guest", "host": "ثانوية العيون الرسمية", "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "N", "am": 217, "pm": 212, "project": "snack", "host_type": "wfp_guest_notwfp", "kitchen_status": null, "comment": "", "starting_date": "Am : 14 April / Pm : 7 April"}, {"id": 21, "cerd": 0, "name": "القوس عكار", "wfp": "NOT WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Unknown", "actual": "Snack", "activated": "N", "am": 212, "pm": 0, "project": "unknown", "host_type": "notwfp_host_wfp", "kitchen_status": null, "comment": "Needs approval before starting the distribution ", "starting_date": ""}, {"id": 22, "cerd": 613, "name": "Al-Dawra School", "wfp": "WFP", "role": "Online", "host": "القوس عكار", "is_non_school": false, "original": "Snack", "actual": "Unknown", "activated": "N", "am": 217, "pm": 0, "project": "snack", "host_type": "online", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 23, "cerd": 0, "name": "(AM Students) مدرسة مراح السراج", "wfp": "NOT WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Unknown", "actual": "Snack", "activated": "N", "am": 606, "pm": 82, "project": "unknown", "host_type": "notwfp_host_wfp", "kitchen_status": null, "comment": "Marah Al-Siraj School and Kfarhabou Secondary School expressed their willingness to participate in the Snack Feeding Project, their full cooperation, and their commitment to assume all responsibilities related to the project. Dedicated storage rooms for the snacks are available in both schools.                                                                           Victor Bitar School in Kfarhabou has relocated its students as follows:\nAM shift students were transferred to Marah Al-Siraj School.\nPM shift students were transferred to Kfarhabou Secondary School.                                                                                                                                                                                                                                                 nomber of students  snwiyet kafrhabou:86  - marh srej :606 ", "starting_date": ""}, {"id": 24, "cerd": 0, "name": "(PM Students) ثانوية كفرحبو", "wfp": "NOT WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Unknown", "actual": "Snack", "activated": "N", "am": 86, "pm": 0, "project": "unknown", "host_type": "notwfp_host_wfp", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 25, "cerd": 470, "name": "Victor Bitar - Kfarhabou", "wfp": "WFP", "role": "Guest", "host": "Multiple hosts", "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "N", "am": 484, "pm": 208, "project": "snack", "host_type": "wfp_guest_notwfp", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 26, "cerd": 0, "name": "مبنى مقدم من راهبات الناصرة كفرزينا فقط لدوام قبل الظهر", "wfp": "Not a School", "role": "Not a School", "host": null, "is_non_school": true, "original": "Unknown", "actual": "Unknown", "activated": "—", "am": 0, "pm": 0, "project": "unknown", "host_type": "non_school", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 27, "cerd": 683, "name": "Kfarzeina Mixed Public School", "wfp": "WFP", "role": "Online", "host": "مبنى مقدم من راهبات الناصرة كفرزينا فقط لدوام قبل الظهر", "is_non_school": false, "original": "Snack", "actual": "Unknown", "activated": "—", "am": 107, "pm": 190, "project": "snack", "host_type": "online", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 28, "cerd": 0, "name": "Antonious Malkoun Barsa", "wfp": "NOT WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Unknown", "actual": "Unknown", "activated": "—", "am": 253, "pm": 0, "project": "unknown", "host_type": "notwfp_host_wfp", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 29, "cerd": 697, "name": "Dahr El Ain Mixed School", "wfp": "WFP", "role": "Online", "host": "Antonious Malkoun Barsa", "is_non_school": false, "original": "Snack", "actual": "Unknown", "activated": "—", "am": 246, "pm": 181, "project": "snack", "host_type": "online", "kitchen_status": null, "comment": "", "starting_date": "Still online till after holidays. As per the principal, Nothing clear for now."}, {"id": 30, "cerd": 730, "name": "ثانوية كفرحاتا", "wfp": "NOT WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Unknown", "actual": "Snack", "activated": "N", "am": 85, "pm": 0, "project": "unknown", "host_type": "notwfp_host_wfp", "kitchen_status": null, "comment": "Will wait to coordinate with the administration.", "starting_date": "\"Kfarhata Secondary School\nThey do not have a designated storage room, so they use the room where the food is placed for the complementary distribution.\n\nShe mentioned that if the task is difficult, she would rather not proceed with it. I explained that it is not very complicated, but it would be better to have one person responsible for the distribution. She replied that they do not have a specific person assigned daily, and she has to coordinate each day with a different teacher to handle the distribution, with no fixed person in charge.\n\nRegarding information about the quantities distributed and what remains, we communicate directly with her.  Director name: Maya Fidawi number: 71822584.     Important note:\nThey will use the same stock that is used for the complementary distribution, and they are unable to provide us with another room.\n\nThey also do not want the distribution to start before receiving approval from the Directorate.\""}, {"id": 31, "cerd": 731, "name": "Kfarhata Public School", "wfp": "WFP", "role": "Guest", "host": "ثانوية كفرحاتا", "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 234, "pm": 318, "project": "snack", "host_type": "wfp_guest_notwfp", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 32, "cerd": 0, "name": "ثانوية حلبا", "wfp": "NOT WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Unknown", "actual": "Snack", "activated": "Y", "am": 571, "pm": 0, "project": "unknown", "host_type": "notwfp_host_wfp", "kitchen_status": null, "comment": "", "starting_date": "Needs Approval before starting the distribution, storage room available "}, {"id": 33, "cerd": 528, "name": "Halba Official School for Boys", "wfp": "WFP", "role": "Guest", "host": "ثانوية حلبا", "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 217, "pm": 271, "project": "snack", "host_type": "wfp_guest_notwfp", "kitchen_status": null, "comment": "Halba:registration Am 217, pm 217 Am Thursday, Friday and Saturday. PM Tuesday, Wednesday, Thursday, Friday and Saturday. Sanawiyet halba grades 10-12 total 571", "starting_date": "No prob at all for having this project at the school but she prefers to receive an approval prior the distribution once she get it we can start the distribution process.Storage room available and staff can help with the distribution"}, {"id": 34, "cerd": 0, "name": "Sanawiyet al Bireh", "wfp": "NOT WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Unknown", "actual": "Unknown", "activated": "N", "am": 0, "pm": 0, "project": "unknown", "host_type": "notwfp_host_wfp", "kitchen_status": null, "comment": "", "starting_date": "Will not proceed"}, {"id": 35, "cerd": 589, "name": "Al Bireh Mixed Public School", "wfp": "WFP But did not join", "role": "Guest", "host": "Sanawiyet al Bireh", "is_non_school": false, "original": "Snack", "actual": "Unknown", "activated": "N", "am": 0, "pm": 0, "project": "snack", "host_type": "not_joined", "kitchen_status": null, "comment": "", "starting_date": "Will not proceed"}, {"id": 36, "cerd": 518, "name": "Rafic el Hariri Mixed School - Tal Meayan", "wfp": "WFP But did not join", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Unknown", "activated": "N", "am": 0, "pm": 0, "project": "snack", "host_type": "not_joined", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 37, "cerd": 1463, "name": "Tal Hayat Mixed School", "wfp": "WFP But did not join", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Unknown", "activated": "N", "am": 0, "pm": 0, "project": "snack", "host_type": "not_joined", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 38, "cerd": 0, "name": "الشيخ زناد الرسمية المختلطة", "wfp": "WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 268, "pm": 0, "project": "snack", "host_type": "wfp_host_wfp", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 39, "cerd": 523, "name": "Al Aarida Mixed School", "wfp": "WFP", "role": "Guest", "host": "الشيخ زناد الرسمية المختلطة", "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 170, "pm": 0, "project": "snack", "host_type": "wfp_guest_notwfp", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 40, "cerd": 416, "name": "Al-Mustaqbal Girls", "wfp": "WFP", "role": "Guest", "host": "الهدى الرسمية للصبيان", "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 98, "pm": 0, "project": "snack", "host_type": "wfp_guest_notwfp", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 41, "cerd": 380, "name": "الهدى الرسمية للصبيان", "wfp": "WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 109, "pm": 0, "project": "snack", "host_type": "wfp_host_wfp", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 0, "cerd": 0, "name": "ابن سينا", "wfp": "NOT WFP", "role": "Host", "host": null, "is_non_school": false, "original": "Unknown", "actual": "Snack", "activated": "N", "am": 554, "pm": 0, "project": "unknown", "host_type": "notwfp_host_wfp", "kitchen_status": null, "comment": "Al-Farabi School will begin its classes at Ibn Sina School starting from 15/04/2026 in the afternoon (PM), while Ibn Sina School will operate in the morning (AM).", "starting_date": "Contact was made with the administration of Ibn Sina School, and approval was obtained to distribute food parcels to the students. A designated storage room is also available within the school. The school is scheduled to start on 07/04/2026."}, {"id": 42, "cerd": 429, "name": "Al Farabi Boys School", "wfp": "WFP", "role": "Guest", "host": "ابن سينا", "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 188, "pm": 0, "project": "snack", "host_type": "wfp_guest_notwfp", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 43, "cerd": 476, "name": "Beit Al Faqas Mixed School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 111, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 44, "cerd": 500, "name": "Al Qatin Mixed School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 315, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 45, "cerd": 724, "name": "Kfaraaqa second mixed school", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 71, "pm": 160, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 46, "cerd": 725, "name": "Kfarakaa First mixed school", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 141, "pm": 246, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 47, "cerd": 668, "name": "Jana Al Fakhouri School- Alma", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 162, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 48, "cerd": 1385, "name": "Rayhaniyeh", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 118, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 49, "cerd": 1403, "name": "Wadi Al-Nahla", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 307, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 50, "cerd": 1419, "name": "Al-Badawi School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 513, "pm": 459, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 51, "cerd": 579, "name": "Amar Al Baykat School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 90, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 52, "cerd": 644, "name": "Aidamoun Mixed Public School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 86, "pm": 137, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 53, "cerd": 575, "name": "Al Nora Mixed School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 170, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 54, "cerd": 581, "name": "Wadi Al Hour Mixed School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 180, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 55, "cerd": 766, "name": "Jran Mixed School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 53, "pm": 138, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 56, "cerd": 756, "name": "Estefan Atiyeh", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 163, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 57, "cerd": 758, "name": "Batroun Kindergarten Group", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 38, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 58, "cerd": 755, "name": "Batroun Official Mixed", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 75, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 59, "cerd": 632, "name": "Kherbet El Jord Mixed School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 81, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 60, "cerd": 621, "name": "Fnaidek Complementary Mixed School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 1648, "pm": 168, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 61, "cerd": 566, "name": "Bazal", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 377, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 62, "cerd": 619, "name": "Wata Mishmish", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 172, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 63, "cerd": 721, "name": "Kousba Mixed (Previously Boys)", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 132, "pm": 310, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 64, "cerd": 501, "name": "Taran", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 486, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 65, "cerd": 1544, "name": "Bshtayel", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 206, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 66, "cerd": 563, "name": "Jdaydet el Qayteh Mixed School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 394, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 67, "cerd": 1610, "name": "Berkayel Second School - English", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 359, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 68, "cerd": 552, "name": "Majdala Mixed School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 180, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 69, "cerd": 591, "name": "Mazraat balda Mixed School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 421, "pm": 217, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 70, "cerd": 537, "name": "Beit Al Haj Kousha Mixed School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 310, "pm": 156, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 71, "cerd": 658, "name": "Akroum", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 133, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 72, "cerd": 636, "name": "Qoubayyat Al-Douq", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 173, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 73, "cerd": 556, "name": "Bebnin Public School for Girls", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 402, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 74, "cerd": 1552, "name": "Al Amara Mixed School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 315, "pm": 327, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 75, "cerd": 748, "name": "Shkka Official Middle School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 187, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 76, "cerd": 751, "name": "Shkka Kindergarten", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 39, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 77, "cerd": 753, "name": "Hammat Official", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 150, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 78, "cerd": 427, "name": "Suleiman Al-Bustani for Boys", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 427, "pm": 308, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 79, "cerd": 509, "name": "Rafic el Hairir Mixed School - Tal Abbas", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 529, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 80, "cerd": 526, "name": "Belana Al Hisa Mixed School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 268, "pm": 293, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 81, "cerd": 538, "name": "Sheikh Taba School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 212, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 82, "cerd": 1402, "name": "Kfarbita Mixed School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 360, "pm": 392, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 83, "cerd": 497, "name": "Baqaa Asfreen", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 128, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 84, "cerd": 466, "name": "Hakel Al-Azima Mixed", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 153, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 85, "cerd": 521, "name": "Joseph Donato Mixed School – Talbibi", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 58, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 86, "cerd": 517, "name": "Hissa Mixed School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 462, "pm": 100, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 87, "cerd": 519, "name": "Al Qlayaat Mixed School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 450, "pm": 428, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 88, "cerd": 742, "name": "Hadsheet Intermediate Mixed School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 75, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 89, "cerd": 740, "name": "Bchareh For Girls School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 187, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 90, "cerd": 689, "name": "Rachel Adah / Sbeil", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 304, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 91, "cerd": 402, "name": "Al Nour Girls School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 380, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 92, "cerd": 391, "name": "Raafat Al Husseini Boys School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 156, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 93, "cerd": 1378, "name": "Hai Al-Nouza", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 213, "pm": 186, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 94, "cerd": 1583, "name": "Mhamara Mixed school (Turkish)", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 510, "pm": 520, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 95, "cerd": 460, "name": "Doctor Wadeh Al Samad Complementary School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 495, "pm": 274, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 96, "cerd": 459, "name": "Baakhoun Complementary mixed School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 312, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 97, "cerd": 364, "name": "Tripoli First Boys", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 194, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 98, "cerd": 763, "name": "Abrin Mixed School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 128, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 99, "cerd": 499, "name": "Izal", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 213, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 100, "cerd": 506, "name": "Harf Beit Dawood", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 115, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 101, "cerd": 532, "name": "Adbl", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 151, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 102, "cerd": 587, "name": "Ain Zait", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 234, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 103, "cerd": 640, "name": "Al-Sandiana Mixed", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 253, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 104, "cerd": 1554, "name": "Mkaitaa Intermediate School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 155, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 105, "cerd": 524, "name": "Al Somaqieh Mixed School", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 335, "pm": 222, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 106, "cerd": 1384, "name": "Qorsayta Second", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 275, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 107, "cerd": 480, "name": "Qorsayta Mixed", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Snack", "actual": "Snack", "activated": "Y", "am": 169, "pm": 0, "project": "snack", "host_type": "wfp_standalone", "kitchen_status": null, "comment": "", "starting_date": ""}, {"id": 108, "cerd": 1542, "name": "القبة الجديدة الرسمية المختلطة", "wfp": "WFP", "role": "Guest", "host": "ابن سينا", "is_non_school": false, "original": "Kitchen (Central)", "actual": "Unknown", "activated": "—", "am": 333, "pm": 173, "project": "kitchen", "host_type": "wfp_guest_notwfp", "kitchen_status": "unclear", "comment": "", "starting_date": "Students hosted at Sanawiyet Qoubbe (Same Building) but main school hosting IDPs\nSanawiye CERD: 1555"}, {"id": 109, "cerd": 1380, "name": "مدرسة روضة ضهر المغر الثانية الرسمية", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Kitchen (Nearby)", "actual": "Snack", "activated": "—", "am": 106, "pm": 0, "project": "kitchen", "host_type": "wfp_standalone", "kitchen_status": "converted", "comment": "", "starting_date": ""}, {"id": 110, "cerd": 408, "name": "ابن خلدون الرسمية  للصبيان", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Kitchen (Central)", "actual": "Snack", "activated": "—", "am": 429, "pm": 345, "project": "kitchen", "host_type": "wfp_standalone", "kitchen_status": "converted", "comment": "No longer operating on Fridays. Both AM and PM shifts will now run from Monday to Thursday only.\nNew operating hours PM shifts from 2:15-7 and break time 4:30-4:40", "starting_date": "Kitchen under rehabilitation"}, {"id": 111, "cerd": 629, "name": "حرار المختلطة الرسمية", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Kitchen (Central)", "actual": "Kitchen (Central)", "activated": "—", "am": 676, "pm": 142, "project": "kitchen", "host_type": "wfp_standalone", "kitchen_status": "stayed_kitchen", "comment": "", "starting_date": ""}, {"id": 112, "cerd": 633, "name": "شان الرسمية", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Kitchen (Nearby)", "actual": "Kitchen (Nearby)", "activated": "—", "am": 261, "pm": 0, "project": "kitchen", "host_type": "wfp_standalone", "kitchen_status": "stayed_kitchen", "comment": "", "starting_date": ""}, {"id": 113, "cerd": 1332, "name": "الكفرون الرسمية", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Kitchen (Nearby)", "actual": "Kitchen (Nearby)", "activated": "—", "am": 234, "pm": 0, "project": "kitchen", "host_type": "wfp_standalone", "kitchen_status": "stayed_kitchen", "comment": "", "starting_date": ""}, {"id": 114, "cerd": 628, "name": "بيت يونس المختلطة الرسمية", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Kitchen (Nearby)", "actual": "Kitchen (Nearby)", "activated": "—", "am": 189, "pm": 0, "project": "kitchen", "host_type": "wfp_standalone", "kitchen_status": "stayed_kitchen", "comment": "", "starting_date": ""}, {"id": 115, "cerd": 625, "name": "القرنة المختلطة الرسمية", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Kitchen (Nearby)", "actual": "Kitchen (Nearby)", "activated": "—", "am": 622, "pm": 0, "project": "kitchen", "host_type": "wfp_standalone", "kitchen_status": "stayed_kitchen", "comment": "", "starting_date": ""}, {"id": 116, "cerd": 634, "name": "الحويش الرسمية المختلطة", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Kitchen (Nearby)", "actual": "Kitchen (Nearby)", "activated": "—", "am": 203, "pm": 0, "project": "kitchen", "host_type": "wfp_standalone", "kitchen_status": "stayed_kitchen", "comment": "", "starting_date": ""}, {"id": 117, "cerd": 1334, "name": "تكميلية الحويش الرسمية المختلطة", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Kitchen (Nearby)", "actual": "Kitchen (Nearby)", "activated": "—", "am": 256, "pm": 202, "project": "kitchen", "host_type": "wfp_standalone", "kitchen_status": "stayed_kitchen", "comment": "", "starting_date": ""}, {"id": 118, "cerd": 630, "name": "الزعرورة الرسمية المختلطة", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Kitchen (Nearby)", "actual": "Kitchen (Nearby)", "activated": "—", "am": 47, "pm": 0, "project": "kitchen", "host_type": "wfp_standalone", "kitchen_status": "stayed_kitchen", "comment": "", "starting_date": ""}, {"id": 120, "cerd": 446, "name": "القلمون الرسمية للصبيان", "wfp": "WFP", "role": "Guest", "host": "ابن سينا", "is_non_school": false, "original": "Kitchen (Central)", "actual": "Unknown", "activated": "Y", "am": 183, "pm": 295, "project": "kitchen", "host_type": "wfp_guest_notwfp", "kitchen_status": "unclear", "comment": "", "starting_date": ""}, {"id": 121, "cerd": 752, "name": "الهري المختلطة الرسمية", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Kitchen (Nearby)", "actual": "Snack", "activated": "—", "am": 128, "pm": 275, "project": "kitchen", "host_type": "wfp_standalone", "kitchen_status": "converted", "comment": "", "starting_date": ""}, {"id": 122, "cerd": 356, "name": "الفضيلة الرسمية للبنات", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Kitchen (Nearby)", "actual": "Snack", "activated": "—", "am": 262, "pm": 353, "project": "kitchen", "host_type": "wfp_standalone", "kitchen_status": "converted", "comment": "", "starting_date": ""}, {"id": 123, "cerd": 747, "name": "شكا الرسمية للبنات", "wfp": "WFP", "role": "Neither", "host": null, "is_non_school": false, "original": "Kitchen (Nearby)", "actual": "Snack", "activated": "—", "am": 122, "pm": 0, "project": "kitchen", "host_type": "wfp_standalone", "kitchen_status": "converted", "comment": "", "starting_date": ""}];
+
+let activeFilters = {};
+
+function goToSchools(filters) {
+  activeFilters = {};
+  document.querySelectorAll('.btn[data-filter]').forEach(function(b){
+    b.classList.remove('active','green-btn','amber-btn','red-btn','purple-btn','teal-btn');
+  });
+  for (var key in filters) {
+    var vals = Array.isArray(filters[key]) ? filters[key] : [filters[key]];
+    activeFilters[key] = new Set(vals);
+    vals.forEach(function(val) {
+      var btn = document.querySelector('.btn[data-filter="'+key+'"][data-val="'+val+'"]');
+      if (btn) {
+        btn.classList.add('active');
+        if (key==='activated') { if(val==='Y') btn.classList.add('green-btn'); else if(val==='N') btn.classList.add('red-btn'); else btn.classList.add('amber-btn'); }
+        else if (key==='wfp') { if(val==='NOT WFP') btn.classList.add('purple-btn'); else if(val==='WFP But did not join') btn.classList.add('red-btn'); }
+        else if (key==='role') { if(val==='Host') btn.classList.add('teal-btn'); else if(val==='Guest') btn.classList.add('amber-btn'); else if(val==='Online') btn.classList.add('purple-btn'); }
+      }
+    });
+  }
+  var sfpBtn = document.querySelector('.prog-btn[data-prog="sfp"]');
+  if (!sfpBtn.classList.contains('active')) sfpBtn.click();
+  document.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('#tab-nav-sfp .tab-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('tab-schools').classList.add('active');
+  document.querySelector('#tab-nav-sfp .tab-btn[data-tab="schools"]').classList.add('active');
+  render();
+  window.scrollTo(0,0);
+}
+let sortCol = null;
+let sortDir = 1;
+
+function getTag(val, type) {
+  if (!val || val === 'Unknown' || val === '—') return `<span class="tag tag-unknown">${val||'—'}</span>`;
+  if (type === 'wfp') {
+    if (val === 'WFP') return `<span class="tag tag-wfp">WFP</span>`;
+    if (val === 'NOT WFP') return `<span class="tag tag-notwfp">Not WFP</span>`;
+    return `<span class="tag tag-notjoined">Out of program</span>`;
+  }
+  if (type === 'role') {
+    if (val === 'Host') return `<span class="tag tag-host">Host</span>`;
+    if (val === 'Guest') return `<span class="tag tag-guest">Guest</span>`;
+    if (val === 'Neither') return `<span class="tag tag-neither">Standalone</span>`;
+    if (val === 'Online') return `<span class="tag tag-online">Online</span>`;
+    return `<span class="tag tag-unknown">${val}</span>`;
+  }
+  if (type === 'prog') {
+    if (val === 'Snack') return `<span class="tag tag-snack">Snack</span>`;
+    if (val.includes('Kitchen')) return `<span class="tag tag-kitchen">${val}</span>`;
+    return `<span class="tag tag-unknown">${val}</span>`;
+  }
+  return `<span class="tag tag-unknown">${val}</span>`;
+}
+
+function getActivatedDot(val) {
+  if (val === 'Y') return `<span class="dot dot-y"></span>Y`;
+  if (val === 'N') return `<span class="dot dot-n"></span>N`;
+  return `<span class="dot dot-dash"></span>—`;
+}
+
+function filterData() {
+  const search = document.getElementById('search').value.toLowerCase();
+  return DATA.filter(s => {
+    for (const [key, vals] of Object.entries(activeFilters)) {
+      if (vals.size === 0) continue;
+      const sv = key === 'kitchen_status' ? s.kitchen_status : s[key];
+      if (!vals.has(sv)) return false;
+    }
+    if (search) {
+      const combined = (s.name + ' ' + s.cerd).toLowerCase();
+      if (!combined.includes(search)) return false;
+    }
+    return true;
+  });
+}
+
+function sortData(data) {
+  if (!sortCol) return data;
+  return [...data].sort((a, b) => {
+    let av = a[sortCol], bv = b[sortCol];
+    if (typeof av === 'number') return (av - bv) * sortDir;
+    return String(av||'').localeCompare(String(bv||'')) * sortDir;
+  });
+}
+
+function updateMetrics(data) {
+  var activated = data.filter(function(s){return s.activated==='Y';}).length;
+  var total = data.length;
+  // Student totals always from full DATA regardless of filters
+  var snackAM = DATA.filter(function(s){return s.project==='snack';}).reduce(function(a,s){return a+s.am;},0);
+  var snackPM = DATA.filter(function(s){return s.project==='snack';}).reduce(function(a,s){return a+s.pm;},0);
+  var kitAM   = DATA.filter(function(s){return s.project==='kitchen';}).reduce(function(a,s){return a+s.am;},0);
+  var kitPM   = DATA.filter(function(s){return s.project==='kitchen';}).reduce(function(a,s){return a+s.pm;},0);
+  document.getElementById('m-activated').textContent = activated;
+  document.getElementById('m-activated-sub').textContent = 'of 123 schools';
+  document.getElementById('m-snack-total').textContent = (snackAM+snackPM).toLocaleString();
+  document.getElementById('m-snack-sub').textContent = 'AM '+snackAM.toLocaleString()+' · PM '+snackPM.toLocaleString();
+  document.getElementById('m-kitchen-total').textContent = (kitAM+kitPM).toLocaleString();
+  document.getElementById('m-kitchen-sub').textContent = 'AM '+kitAM.toLocaleString()+' · PM '+kitPM.toLocaleString();
+}
+
+function render() {
+  const filtered = filterData();
+  const sorted = sortData(filtered);
+  updateMetrics(sorted);
+  const tbody = document.getElementById('table-body');
+  document.getElementById('result-count').textContent = `${sorted.length} school${sorted.length !== 1 ? 's' : ''}`;
+  document.getElementById('no-results').style.display = sorted.length === 0 ? 'block' : 'none';
+
+  // Build a set of guest names that are in the filtered list
+  const filteredNames = new Set(sorted.map(s => s.name));
+
+  // Build rows: for each host, inject its guests right after; skip orphan guests (rendered under host)
+  const renderedGuests = new Set();
+  const rows = [];
+
+  sorted.forEach(function(s) {
+    if (renderedGuests.has(s.name)) return;
+
+    rows.push({ school: s, isGuest: false });
+
+    if (s.role === 'Host') {
+      // Find guests AND online schools that belong to this host
+      sorted.forEach(function(g) {
+        if ((g.role !== 'Guest' && g.role !== 'Online') || renderedGuests.has(g.name)) return;
+        if (g.host && (g.host === s.name || s.name.includes(g.host) || g.host.includes(s.name))) {
+          rows.push({ school: g, isGuest: true });
+          renderedGuests.add(g.name);
+        }
+      });
+    }
+  });
+
+  tbody.innerHTML = rows.map(function(r) {
+    var s = r.school;
+    var muniTag = s.is_non_school
+      ? '<span style="font-family:var(--mono);font-size:9px;background:rgba(245,166,35,0.12);color:#f5a623;border:1px solid rgba(245,166,35,0.3);padding:1px 5px;border-radius:3px;margin-left:6px;vertical-align:middle">not a school</span>'
+      : '';
+    var indent = r.isGuest
+      ? '<span style="display:inline-block;width:10px;flex-shrink:0"></span><span style="color:#7a8099;font-size:11px;margin-right:5px">↳</span>'
+      : '';
+    var nameStyle = r.isGuest
+      ? 'font-weight:400;font-size:12px;color:var(--muted);display:flex;align-items:center'
+      : 'font-weight:500;font-size:12px;display:flex;align-items:center';
+    var rowBg = r.isGuest ? 'style="background:rgba(255,255,255,0.018)"' : '';
+    return '<tr data-name="' + s.name.replace(/"/g,'&quot;') + '" ' + rowBg + '>'
+      + '<td class="school-name"><div style="' + nameStyle + '">' + indent + s.name + muniTag + '</div></td>'
+      + '<td class="cerd">' + (s.cerd || '—') + '</td>'
+      + '<td>' + getTag(s.wfp, 'wfp') + '</td>'
+      + '<td>' + getTag(s.role, 'role') + '</td>'
+      + '<td>' + getTag(s.original, 'prog') + '</td>'
+      + '<td>' + getTag(s.actual, 'prog') + '</td>'
+      + '<td>' + getActivatedDot(s.activated) + '</td>'
+      + '<td style="font-family:var(--mono);font-size:11px">' + (s.am > 0 ? s.am.toLocaleString() : '—') + '</td>'
+      + '<td style="font-family:var(--mono);font-size:11px">' + (s.pm > 0 ? s.pm.toLocaleString() : '—') + '</td>'
+      + '</tr>';
+  }).join('');
+
+  tbody.querySelectorAll('tr').forEach(function(tr) {
+    tr.addEventListener('click', function() {
+      var name = tr.dataset.name;
+      var school = DATA.find(function(s) { return s.name === name; });
+      if (school) openModal(school);
+    });
+  });
+}
+
+function openModal(s) {
+  document.getElementById('modal-name').textContent = s.name;
+  document.getElementById('modal-cerd-line').textContent = s.cerd ? `CERD: ${s.cerd}` : 'No CERD on file';
+
+  var hostTypeLabel = {
+    wfp_standalone: 'WFP — standalone school',
+    wfp_host_wfp: 'WFP hosting another WFP school',
+    wfp_guest_notwfp: 'WFP guest at non-WFP school',
+    notwfp_host_wfp: 'Non-WFP hosting WFP guest',
+    notwfp_guest: 'Non-WFP guest school',
+    online: 'Online / remote learning',
+    not_joined: 'WFP — did not join program',
+    other: 'Unclassified'
+  }[s.host_type] || s.host_type;
+
+  const kitchenLabel = s.kitchen_status === 'converted' ? '⟶ Converted to Snack'
+    : s.kitchen_status === 'stayed_kitchen' ? '⟶ Remained Kitchen'
+    : s.kitchen_status === 'unclear' ? '⟶ Status unclear'
+    : null;
+
+  document.getElementById('modal-body').innerHTML =
+    (s.is_municipality ? '<div style="background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.25);border-radius:5px;padding:8px 12px;margin-bottom:14px;font-size:11px;color:#a78bfa;font-family:var(--mono)">Municipality building — no enrolled students, hosts guest school(s) only</div>' : '')
+    + `
+    <div class="modal-grid">
+      <div class="modal-field">
+        <div class="modal-field-label">WFP Affiliation</div>
+        <div class="modal-field-value">${getTag(s.wfp, 'wfp')}</div>
+      </div>
+      <div class="modal-field">
+        <div class="modal-field-label">Role</div>
+        <div class="modal-field-value">${getTag(s.role, 'role')}${s.host ? `<span style="font-size:11px;color:var(--muted);margin-left:8px">@ ${s.host}</span>` : ''}</div>
+      </div>
+      <div class="modal-field">
+        <div class="modal-field-label">Original program</div>
+        <div class="modal-field-value">${getTag(s.original, 'prog')}</div>
+      </div>
+      <div class="modal-field">
+        <div class="modal-field-label">Actual program</div>
+        <div class="modal-field-value">${getTag(s.actual, 'prog')}${kitchenLabel ? `<span style="font-size:11px;color:var(--amber);margin-left:6px">${kitchenLabel}</span>` : ''}</div>
+      </div>
+      <div class="modal-field">
+        <div class="modal-field-label">Activated</div>
+        <div class="modal-field-value" style="font-size:14px">${getActivatedDot(s.activated)}</div>
+      </div>
+      <div class="modal-field">
+        <div class="modal-field-label">Hosting type</div>
+        <div class="modal-field-value" style="font-size:12px;color:var(--muted)">${hostTypeLabel}</div>
+      </div>
+    </div>
+    <hr class="modal-divider">
+    <div class="students-row" style="margin-bottom:18px">
+      <div class="student-stat">
+        <div class="student-stat-num">${s.am > 0 ? s.am.toLocaleString() : '—'}</div>
+        <div class="student-stat-label">AM students</div>
+      </div>
+      <div class="student-stat">
+        <div class="student-stat-num">${s.pm > 0 ? s.pm.toLocaleString() : '—'}</div>
+        <div class="student-stat-label">PM students</div>
+      </div>
+      <div class="student-stat">
+        <div class="student-stat-num">${(s.am + s.pm) > 0 ? (s.am + s.pm).toLocaleString() : '—'}</div>
+        <div class="student-stat-label">Total</div>
+      </div>
+    </div>
+    ${s.starting_date ? `<div class="modal-field" style="margin-bottom:12px"><div class="modal-field-label">Starting date / notes</div><div class="modal-field-value" style="font-size:12px;color:var(--muted);line-height:1.5">${s.starting_date}</div></div>` : ''}
+    <div class="modal-field">
+      <div class="modal-field-label">Field comments</div>
+      <div class="modal-comment ${!s.comment ? 'empty' : ''}">${s.comment || 'No comments recorded'}</div>
+    </div>
+  `;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+// Filter buttons
+document.querySelectorAll('.btn[data-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.filter;
+    const val = btn.dataset.val;
+    if (!activeFilters[key]) activeFilters[key] = new Set();
+    if (activeFilters[key].has(val)) {
+      activeFilters[key].delete(val);
+      btn.classList.remove('active','green-btn','amber-btn','red-btn','purple-btn','teal-btn');
+    } else {
+      activeFilters[key].add(val);
+      btn.classList.add('active');
+      if (key === 'activated') {
+        if (val === 'Y') btn.classList.add('green-btn');
+        else if (val === 'N') btn.classList.add('red-btn');
+        else btn.classList.add('amber-btn');
+      } else if (key === 'role') {
+        if (val === 'Host') btn.classList.add('teal-btn');
+        else if (val === 'Guest') btn.classList.add('amber-btn');
+        else if (val === 'Online') btn.classList.add('purple-btn');
+      } else if (key === 'wfp') {
+        if (val === 'NOT WFP') btn.classList.add('purple-btn');
+        else if (val === 'WFP But did not join') btn.classList.add('red-btn');
+      }
+    }
+    render();
+  });
+});
+
+// Activate the "Y" button on load
+document.querySelector('.btn[data-val="Y"]').click();
+
+// Sort
+document.querySelectorAll('th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (sortCol === col) sortDir *= -1;
+    else { sortCol = col; sortDir = 1; }
+    document.querySelectorAll('th').forEach(t => t.classList.remove('sorted'));
+    th.classList.add('sorted');
+    th.querySelector('.sort-arrow').textContent = sortDir === 1 ? '↑' : '↓';
+    render();
+  });
+});
+
+// Search
+document.getElementById('search').addEventListener('input', render);
+
+// Clear all
+document.getElementById('clear-all').addEventListener('click', () => {
+  activeFilters = {};
+  document.querySelectorAll('.btn[data-filter]').forEach(b => b.classList.remove('active','green-btn','amber-btn','red-btn','purple-btn','teal-btn'));
+  document.getElementById('search').value = '';
+  render();
+});
+
+// Modal close
+document.getElementById('modal-close').addEventListener('click', () => document.getElementById('modal-overlay').classList.remove('open'));
+document.getElementById('modal-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.getElementById('modal-overlay').classList.remove('open'); });
+
+// TAB SWITCHING
+// Programme switcher
+document.querySelectorAll('.prog-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    var prog = btn.dataset.prog;
+    document.querySelectorAll('.prog-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    var sfpNav = document.getElementById('tab-nav-sfp');
+    var ckNav = document.getElementById('tab-nav-ck');
+    var mSfp = document.getElementById('metrics-sfp');
+    var mCk  = document.getElementById('metrics-ck');
+    if (prog === 'sfp') {
+      sfpNav.style.display = 'flex';
+      ckNav.style.display = 'none';
+      mSfp.style.display = '';
+      mCk.style.display  = 'none';
+      // activate first SFP tab
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('#tab-nav-sfp .tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-overview').classList.add('active');
+      document.querySelector('#tab-nav-sfp .tab-btn[data-tab="overview"]').classList.add('active');
+    } else {
+      sfpNav.style.display = 'none';
+      ckNav.style.display = 'flex';
+      mSfp.style.display = 'none';
+      mCk.style.display  = '';
+      // activate first CK tab
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('#tab-nav-ck .tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-shelters').classList.add('active');
+      document.querySelector('#tab-nav-ck .tab-btn[data-tab="shelters"]').classList.add('active');
+    }
+  });
+});
+
+// Tab switching (works across both navs)
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    var parentNav = btn.closest('.tab-nav');
+    parentNav.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// OVERVIEW — all colors are hardcoded hex (not CSS vars) so they work in inline style=""
+function renderOverview() {
+  var el = document.getElementById('overview-content');
+  if (!el) return;
+
+  var G='#2ecc8a',R='#ff5f5f',AM='#f5a623',AC='#4e9eff',PU='#a78bfa',TE='#22d3ee',MU='#7a8099',TX='#e8eaf0',SU='#181c27',BO='rgba(255,255,255,0.07)';
+
+  var total=DATA.length;
+  var activated=DATA.filter(function(s){return s.activated==='Y';}).length;
+  var notAct=DATA.filter(function(s){return s.activated==='N';}).length;
+  var unk=DATA.filter(function(s){return s.activated==='—';}).length;
+  var amTot=DATA.reduce(function(a,s){return a+s.am;},0);
+  var pmTot=DATA.reduce(function(a,s){return a+s.pm;},0);
+  var amAct=DATA.filter(function(s){return s.activated==='Y';}).reduce(function(a,s){return a+s.am;},0);
+  var pmAct=DATA.filter(function(s){return s.activated==='Y';}).reduce(function(a,s){return a+s.pm;},0);
+  var wfpN=DATA.filter(function(s){return s.wfp==='WFP';}).length;
+  var notwfpN=DATA.filter(function(s){return s.wfp==='NOT WFP';}).length;
+  var notjoinN=DATA.filter(function(s){return s.wfp==='WFP But did not join';}).length;
+  var kitN=DATA.filter(function(s){return s.kitchen_status!==null;}).length;
+  var convN=DATA.filter(function(s){return s.kitchen_status==='converted';}).length;
+  var stayN=DATA.filter(function(s){return s.kitchen_status==='stayed_kitchen';}).length;
+  var uncN=DATA.filter(function(s){return s.kitchen_status==='unclear';}).length;
+
+  function p(n,d){return d>0?Math.round(n/d*100):0;}
+  var actPct=p(activated,total), amPct=p(amAct,amTot);
+  var kConvPct=p(convN,kitN), kStayPct=p(stayN,kitN), kUncPct=p(uncN,kitN);
+
+  function prog(pct,col){
+    return '<div style="height:10px;background:rgba(255,255,255,0.06);border-radius:5px;overflow:hidden;margin-bottom:6px"><div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:5px"></div></div>';
+  }
+  function minibar(val,tot,col){
+    var pct=p(val,tot);
+    return '<div style="flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:3px"></div></div>';
+  }
+  function statrow(label,val,col,last){
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;'+(last?'':'border-bottom:1px solid '+BO)+'"><span style="font-size:12px;color:'+MU+'">'+label+'</span><span style="font-family:var(--mono);font-size:13px;color:'+(col||TX)+'">'+val+'</span></div>';
+  }
+
+  var roles=[
+    {label:'WFP Standalone',count:DATA.filter(function(s){return s.host_type==='wfp_standalone';}).length,y:DATA.filter(function(s){return s.host_type==='wfp_standalone'&&s.activated==='Y';}).length,col:AC,f:{role:'Neither',wfp:'WFP'}},
+    {label:'Non-WFP hosting WFP',count:DATA.filter(function(s){return s.host_type==='notwfp_host_wfp';}).length,y:DATA.filter(function(s){return s.host_type==='notwfp_host_wfp'&&s.activated==='Y';}).length,col:TE,f:{role:'Host',wfp:'NOT WFP'}},
+    {label:'WFP hosting Non-WFP',count:DATA.filter(function(s){return s.host_type==='wfp_guest_notwfp';}).length,y:DATA.filter(function(s){return s.host_type==='wfp_guest_notwfp'&&s.activated==='Y';}).length,col:AM,f:{role:'Guest',wfp:'WFP'}},
+    {label:'WFP hosting WFP',count:DATA.filter(function(s){return s.host_type==='wfp_host_wfp';}).length,y:DATA.filter(function(s){return s.host_type==='wfp_host_wfp'&&s.activated==='Y';}).length,col:PU,f:{role:'Host',wfp:'WFP'}},
+    {label:'Online',count:DATA.filter(function(s){return s.host_type==='online';}).length,y:0,col:MU,f:{role:'Online'}},
+    {label:'Out of program',count:DATA.filter(function(s){return s.host_type==='not_joined';}).length,y:0,col:R,f:{wfp:'WFP But did not join'}},
+  ].filter(function(r){return r.count>0;});
+
+  var card='background:'+SU+';border:1px solid '+BO+';border-radius:6px;padding:18px 20px;';
+  var title='font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:'+MU+';margin-bottom:14px';
+
+  var html='';
+
+  // Callout
+  html+='<div style="background:rgba(78,158,255,0.07);border:1px solid rgba(78,158,255,0.18);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:'+MU+';line-height:1.6">'
+    +'<span style="color:'+AC+';font-weight:500">'+actPct+'% activation rate</span> — '
+    +activated+' of 124 locations running. '
+    +amAct.toLocaleString()+' of '+(amTot+pmTot).toLocaleString()+' enrolled students ('+amPct+'% AM) are in active schools. '
+    +'<span style="color:'+R+'">'+notAct+' not yet activated</span>, <span style="color:'+AM+'">'+unk+' no status</span>.'
+    +'</div>';
+
+  // Row 1: activation + student reach
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">';
+
+  html+='<div style="'+card+'">'
+    +'<div style="'+title+'">Activation status</div>'
+    +prog(actPct,G)
+    +'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:'+MU+';margin-bottom:14px"><span>'+actPct+'% activated</span><span>of 123 schools</span></div>'
+    +statrow('<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+G+';margin-right:6px"></span>Activated (Y)',activated,G)
+    +statrow('<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+R+';margin-right:6px"></span>Not activated (N)',notAct,R)
+    +statrow('<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+MU+';margin-right:6px"></span>Status unknown',unk,AM,true)
+    +'</div>';
+
+  html+='<div style="'+card+'">'
+    +'<div style="'+title+'">Student reach</div>'
+    +'<div style="font-family:var(--mono);font-size:28px;font-weight:300;color:'+G+'">'+(amAct+pmAct).toLocaleString()+'</div>'
+    +'<div style="font-size:10px;color:'+MU+';text-transform:uppercase;letter-spacing:.06em;margin:4px 0 12px">Total students in active schools</div>'
+    +prog(p(amAct+pmAct,amTot+pmTot),G)
+    +'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:'+MU+';margin-bottom:14px"><span>'+p(amAct+pmAct,amTot+pmTot)+'% of enrolled</span><span>'+(amTot+pmTot).toLocaleString()+' total</span></div>'
+    +statrow('Total AM enrolled',amTot.toLocaleString())
+    +statrow('Total PM enrolled',pmTot.toLocaleString())
+    +statrow('Not yet reached (AM)',(amTot-amAct).toLocaleString(),R)
+    +statrow('Not yet reached (PM)',(pmTot-pmAct).toLocaleString(),R,true)
+    +'</div>';
+
+  html+='</div>';
+
+  // Row 2: hosting + affiliation/program
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">';
+
+  var hostHtml='<div style="'+card+'">'
+    +'<div style="'+title+'">Hosting relationships</div>';
+  roles.forEach(function(r,i){
+    hostHtml+='<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;'+(i<roles.length-1?'border-bottom:1px solid '+BO:'')+'">'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+      +'<div style="width:3px;height:32px;border-radius:2px;background:'+r.col+';flex-shrink:0"></div>'
+      +'<div><div style="font-size:12px;color:'+TX+'">'+r.label+'</div>'
+      +'<div style="font-size:10px;color:'+MU+';margin-top:2px">'+r.y+' activated &middot; '+(r.count-r.y)+' pending</div></div></div>'
+      +'<div style="font-family:var(--mono);font-size:18px;color:'+TX+';cursor:pointer;border-bottom:1px dashed rgba(255,255,255,0.25)" onclick="goToSchools(r.f||{})">'+r.count+'</div></div>';
+  });
+  hostHtml+='</div>';
+  html+=hostHtml;
+
+  var affRows=[
+    {label:'WFP',val:wfpN,col:AC,f:{wfp:'WFP'}},
+    {label:'Not WFP',val:notwfpN,col:PU,f:{wfp:'NOT WFP'}},
+    {label:'Out of the program',val:notjoinN,col:R,f:{wfp:'WFP But did not join'}},
+  ];
+  var progRows=[
+    {label:'Snack',val:DATA.filter(function(s){return s.original==='Snack';}).length,col:G},
+    {label:'Kitchen',val:DATA.filter(function(s){return s.original==='Kitchen (Nearby)'||s.original==='Kitchen (Central)';}).length,col:AM},
+    {label:'Unknown / TBD',val:DATA.filter(function(s){return ['Snack','Kitchen (Nearby)','Kitchen (Central)'].indexOf(s.original)<0;}).length,col:MU},
+  ];
+
+  var rightCol='<div style="display:flex;flex-direction:column;gap:16px">';
+  rightCol+='<div style="'+card+'">'
+    +'<div style="'+title+'">WFP affiliation</div>';
+  affRows.forEach(function(r){
+    rightCol+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">'
+      +'<div style="width:120px;flex-shrink:0;font-size:11px;color:'+MU+'">'+r.label+'</div>'
+      +minibar(r.val,total,r.col)
+      +'<div style="font-family:var(--mono);font-size:11px;color:'+TX+';min-width:24px;text-align:right;cursor:pointer;border-bottom:1px dashed rgba(255,255,255,0.25)" onclick="goToSchools(r.f||{})">'+r.val+'</div></div>';
+  });
+  rightCol+='</div>';
+
+  rightCol+='<div style="'+card+'">'
+    +'<div style="'+title+'">Program type (original)</div>';
+  progRows.forEach(function(r){
+    rightCol+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">'
+      +'<div style="width:120px;flex-shrink:0;font-size:11px;color:'+MU+'">'+r.label+'</div>'
+      +minibar(r.val,total,r.col)
+      +'<div style="font-family:var(--mono);font-size:11px;color:'+TX+';min-width:24px;text-align:right;cursor:pointer;border-bottom:1px dashed rgba(255,255,255,0.25)" onclick="goToSchools(r.f||{})">'+r.val+'</div></div>';
+  });
+  rightCol+='</div></div>';
+  html+=rightCol;
+  html+='</div>';
+
+  // Student breakdown by project and WFP type
+  var snackWfpAM=DATA.filter(function(s){return s.project==='snack'&&s.wfp==='WFP';}).reduce(function(a,s){return a+s.am+s.pm;},0);
+  var snackNotwfpAM=DATA.filter(function(s){return s.project==='snack'&&s.wfp==='NOT WFP';}).reduce(function(a,s){return a+s.am+s.pm;},0);
+  var snackOutAM=DATA.filter(function(s){return s.project==='snack'&&s.wfp==='WFP But did not join';}).reduce(function(a,s){return a+s.am+s.pm;},0);
+  var snackTot=snackWfpAM+snackNotwfpAM+snackOutAM;
+  var kitWfpAM=DATA.filter(function(s){return s.project==='kitchen'&&s.wfp==='WFP';}).reduce(function(a,s){return a+s.am+s.pm;},0);
+  var kitNotwfpAM=DATA.filter(function(s){return s.project==='kitchen'&&s.wfp==='NOT WFP';}).reduce(function(a,s){return a+s.am+s.pm;},0);
+  var kitOutAM=DATA.filter(function(s){return s.project==='kitchen'&&s.wfp==='WFP But did not join';}).reduce(function(a,s){return a+s.am+s.pm;},0);
+  var kitTot=kitWfpAM+kitNotwfpAM+kitOutAM;
+
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">';
+
+  // Snacks student breakdown
+  html+='<div style="'+card+'">';
+  html+='<div style="'+title+'">Snacks — student breakdown</div>';
+  html+='<div style="font-family:var(--mono);font-size:24px;font-weight:300;color:'+G+'">'+snackTot.toLocaleString()+'</div>';
+  html+='<div style="font-size:10px;color:'+MU+';text-transform:uppercase;letter-spacing:.06em;margin:4px 0 14px">total students (AM + PM)</div>';
+  [  {label:'WFP',val:snackWfpAM,col:AC},{label:'Not WFP',val:snackNotwfpAM,col:PU},{label:'Out of program',val:snackOutAM,col:R}
+  ].forEach(function(r){
+    html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">';
+    html+='<div style="width:110px;flex-shrink:0;font-size:11px;color:'+MU+'">'+r.label+'</div>';
+    html+=minibar(r.val,snackTot||1,r.col);
+    html+='<div style="font-family:var(--mono);font-size:11px;color:'+TX+';min-width:24px;text-align:right">'+r.val.toLocaleString()+'</div></div>';
+  });
+  html+='</div>';
+
+  // Kitchens student breakdown
+  html+='<div style="'+card+'">';
+  html+='<div style="'+title+'">Kitchens — student breakdown</div>';
+  html+='<div style="font-family:var(--mono);font-size:24px;font-weight:300;color:'+AM+'">'+kitTot.toLocaleString()+'</div>';
+  html+='<div style="font-size:10px;color:'+MU+';text-transform:uppercase;letter-spacing:.06em;margin:4px 0 14px">total students (AM + PM)</div>';
+  [  {label:'WFP',val:kitWfpAM,col:AC},{label:'Not WFP',val:kitNotwfpAM,col:PU},{label:'Out of program',val:kitOutAM,col:R}
+  ].forEach(function(r){
+    html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">';
+    html+='<div style="width:110px;flex-shrink:0;font-size:11px;color:'+MU+'">'+r.label+'</div>';
+    html+=minibar(r.val,kitTot||1,r.col);
+    html+='<div style="font-family:var(--mono);font-size:11px;color:'+TX+';min-width:24px;text-align:right">'+r.val.toLocaleString()+'</div></div>';
+  });
+  html+='</div>';
+
+  html+='</div>';
+
+  // Kitchen transition
+  html+='<div style="'+card+'">'
+    +'<div style="'+title+'">Kitchen to snacks transition ('+kitN+' original kitchen schools)</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">';
+  var kRows=[
+    {label:'Converted to snack',val:convN,pct:kConvPct,col:G,mid:false},
+    {label:'Stayed kitchen',val:stayN,pct:kStayPct,col:AM,mid:true},
+    {label:'Status unclear',val:uncN,pct:kUncPct,col:MU,mid:false},
+  ];
+  kRows.forEach(function(r){
+    html+='<div style="text-align:center;padding:14px 0;'+(r.mid?'border-left:1px solid '+BO+';border-right:1px solid '+BO:'')+'">'
+      +'<div style="font-family:var(--mono);font-size:32px;font-weight:300;color:'+r.col+'">'+r.val+'</div>'
+      +'<div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:'+MU+';margin-top:4px;margin-bottom:10px">'+r.label+'</div>'
+      +prog(r.pct,r.col)
+      +'<div style="font-family:var(--mono);font-size:10px;color:'+MU+'">'+r.pct+'% of kitchens</div>'
+      +'</div>';
+  });
+  html+='</div></div>';
+
+
+  // Kitchen Expansion overview card
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">';
+  html+='<div style="'+card+'">';
+  html+='<div style="'+title+'">Kitchen Expansion</div>';
+  html+='<div style="font-family:var(--mono);font-size:24px;font-weight:300;color:#22d3ee">5,040</div>';
+  html+='<div style="font-size:10px;color:'+MU+';text-transform:uppercase;letter-spacing:.06em;margin:4px 0 14px">additional students · 2 central kitchens</div>';
+  [
+    {label:'Ibn Khaldoun (Tripoli)',val:'778 students',sub:'8 nearby schools · 6 new'},
+    {label:'Tal Abbas (Akkar)',val:'535 students',sub:'5 nearby schools · 3 new'},
+  ].forEach(function(r){
+    html+='<div style="margin-bottom:10px">';
+    html+='<div style="font-size:11px;color:'+TX+';font-weight:500">'+r.label+'</div>';
+    html+='<div style="font-family:var(--mono);font-size:11px;color:#22d3ee">'+r.val+'</div>';
+    html+='<div style="font-size:10px;color:'+MU+'">'+r.sub+'</div>';
+    html+='</div>';
+  });
+  html+='<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07)">';
+  html+=statrow('New schools added',9,'#22d3ee');
+  html+=statrow('Already in snacks',4,MU,true);
+  html+='</div>';
+  html+='</div>';
+  html+='<div style="'+card+'">';
+  html+='<div style="'+title+'">New students breakdown</div>';
+  html+='<div style="font-size:10px;color:'+MU+';text-transform:uppercase;letter-spacing:.06em;margin:0 0 12px">Central kitchens only count new activity</div>';
+  [
+    {label:'Ibn Khaldoun — central',val:778,isNew:true},
+    {label:'Nearby — new schools',val:2150,isNew:true},
+    {label:'Nearby — ex-snack schools',val:782,isNew:false},
+    {label:'Tal Abbas — central',val:535,isNew:true},
+    {label:'Nearby — new schools',val:1577,isNew:true},
+    {label:'Nearby — ex-snack schools',val:1407,isNew:false},
+  ].forEach(function(r){
+    html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">';
+    html+='<div style="width:160px;flex-shrink:0;font-size:10px;color:'+MU+'">'+r.label+'</div>';
+    html+=minibar(r.val,3727,r.isNew?'#22d3ee':MU);
+    html+='<div style="font-family:var(--mono);font-size:11px;color:'+(r.isNew?'#22d3ee':MU)+';min-width:36px;text-align:right">'+r.val.toLocaleString()+'</div>';
+    html+='</div>';
+  });
+  html+='</div>';
+  html+='</div>';
+
+  el.innerHTML=html;
+}
+renderOverview();
+
+// ─── Kitchen Expansion Tab ───────────────────────────────────────────────────
+const KE_DATA = {
+  kitchens: [
+    {
+      id: 'ibnkhaldoun',
+      name_ar: 'ابن خلدون الرسمية المختلطة',
+      name_en: 'Ibn Khaldoun Mixed School',
+      cerd: 408,
+      location: 'Tripoli, North',
+      am: 433, pm: 345,
+      nearby: [
+        {name:'المربي سميح مولوي المختلطة', prev_snack:false, cerd:1374, am:374, pm:0, dist:'2 min'},
+        {name:'حي النزهة المختلطة',          prev_snack:true,  cerd:1378, am:215, pm:186, dist:'2 min'},
+        {name:'الاميرة نسب الرسمية',          prev_snack:false, cerd:411,  am:185, pm:0,   dist:'5 min'},
+        {name:'التدريب التربوي الرسمية للبنات',prev_snack:false, cerd:407,  am:663, pm:0,   dist:'2 min'},
+        {name:'ابن خلدون بنات',               prev_snack:false, cerd:1606, am:412, pm:0,   dist:'same building'},
+        {name:'الفضيلة الرسمية للصبيان',      prev_snack:false, cerd:355,  am:158, pm:0,   dist:'<10 min'},
+        {name:'النور الرسمية',                 prev_snack:true,  cerd:402,  am:381, pm:0,   dist:'5 min'},
+        {name:'ابي سمراء الاولى للبنات',       prev_snack:false, cerd:400,  am:358, pm:0,   dist:'<10 min'},
+      ]
+    },
+    {
+      id: 'talabbas',
+      name_ar: 'رفيق الحريري - تلعباس الغربي',
+      name_en: 'Rafic El Hariri - Tal Abbas',
+      cerd: 509,
+      location: 'Tal Abbas, Akkar',
+      am: 535, pm: 0,
+      nearby: [
+        {name:'مدرسة خريبة المدى', prev_snack:false, cerd:526,  am:801, pm:0,   dist:'-'},
+        {name:'حيصة',              prev_snack:true,  cerd:517,  am:426, pm:100, dist:'4 min'},
+        {name:'قليعات',            prev_snack:true,  cerd:519,  am:450, pm:431, dist:'<15 min'},
+        {name:'تل حميرة',          prev_snack:false, cerd:null, am:560, pm:0,   dist:'10 min'},
+        {name:'كنيسة',             prev_snack:false, cerd:null, am:216, pm:0,   dist:'<15 min'},
+      ]
+    }
+  ]
+};
+
+function renderKitchenExpansion() {
+  var el = document.getElementById('ke-content');
+  var TE='#22d3ee', MU='#7a8099', TX='#e8eaf0', G='#2ecc8a', AM='#f5a623', R='#ff5f5f';
+  var card='background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:20px;';
+  var title='font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:'+MU+';margin-bottom:14px;';
+
+  var html='<div style="padding:32px">';
+  html+='<div style="font-family:var(--mono);font-size:11px;color:'+TE+';text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Kitchen Expansion Programme</div>';
+  html+='<div style="font-size:22px;font-weight:300;color:'+TX+';margin-bottom:6px">2 Central Kitchens · 13 Nearby Schools</div>';
+  html+='<div style="font-size:12px;color:'+MU+';margin-bottom:28px">9 new schools added to programme · 4 already covered by snacks</div>';
+
+  KE_DATA.kitchens.forEach(function(k) {
+    var newSchools = k.nearby.filter(function(s){return !s.prev_snack;});
+    var snackSchools = k.nearby.filter(function(s){return s.prev_snack;});
+    var nearbyAM = k.nearby.reduce(function(a,s){return a+s.am;},0);
+    var nearbyPM = k.nearby.reduce(function(a,s){return a+s.pm;},0);
+    var totalAM = k.am + nearbyAM;
+    var totalPM = k.pm + nearbyPM;
+
+    html+='<div style="'+card+'margin-bottom:24px">';
+
+    // Kitchen header
+    html+='<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px">';
+    html+='<div>';
+    html+='<div style="font-family:var(--mono);font-size:10px;color:'+TE+';text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Central Kitchen</div>';
+    html+='<div style="font-size:18px;font-weight:400;color:'+TX+'">'+k.name_en+'</div>';
+    html+='<div style="font-size:13px;color:'+MU+';margin-top:2px">'+k.name_ar+' · CERD '+k.cerd+' · '+k.location+'</div>';
+    html+='</div>';
+    html+='<div style="text-align:right">';
+    html+='<div style="font-family:var(--mono);font-size:22px;font-weight:300;color:'+TE+'">'+(k.am+k.pm).toLocaleString()+'</div>';
+    html+='<div style="font-size:10px;color:'+MU+'">AM '+k.am.toLocaleString()+' · PM '+k.pm.toLocaleString()+'</div>';
+    html+='</div>';
+    html+='</div>';
+
+    // Stats row
+    html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;padding:14px;background:rgba(0,0,0,0.2);border-radius:6px">';
+    [
+      {label:'Total AM (incl. nearby)',val:totalAM.toLocaleString()},
+      {label:'Total PM (incl. nearby)',val:totalPM.toLocaleString()},
+      {label:'New schools',val:newSchools.length},
+      {label:'Already in snacks',val:snackSchools.length},
+    ].forEach(function(s){
+      html+='<div><div style="font-family:var(--mono);font-size:18px;font-weight:300;color:'+TX+'">'+s.val+'</div>';
+      html+='<div style="font-size:10px;color:'+MU+'">'+s.label+'</div></div>';
+    });
+    html+='</div>';
+
+    // Nearby schools table
+    html+='<div style="'+title+'">Nearby Schools ('+k.nearby.length+')</div>';
+    html+='<table style="width:100%;border-collapse:collapse;font-size:12px">';
+    html+='<thead><tr style="border-bottom:1px solid rgba(255,255,255,0.07)">';
+    ['School','CERD','AM','PM','Total','Status','Distance'].forEach(function(h){
+      html+='<th style="font-family:var(--mono);font-size:10px;color:'+MU+';text-transform:uppercase;letter-spacing:0.06em;padding:6px 10px;text-align:left;font-weight:400">'+h+'</th>';
+    });
+    html+='</tr></thead><tbody>';
+
+    k.nearby.forEach(function(s){
+      var total = s.am + s.pm;
+      var tag = s.prev_snack
+        ? '<span style="font-family:var(--mono);font-size:9px;background:rgba(34,211,238,0.10);color:'+TE+';border:1px solid rgba(34,211,238,0.25);border-radius:3px;padding:1px 5px">snack school</span>'
+        : '<span style="font-family:var(--mono);font-size:9px;background:rgba(46,204,138,0.10);color:'+G+';border:1px solid rgba(46,204,138,0.25);border-radius:3px;padding:1px 5px">new</span>';
+      html+='<tr style="border-bottom:1px solid rgba(255,255,255,0.04)">';
+      html+='<td style="padding:8px 10px;color:'+TX+'">'+s.name+'</td>';
+      html+='<td style="padding:8px 10px;color:'+MU+';font-family:var(--mono);font-size:11px">'+(s.cerd||'—')+'</td>';
+      html+='<td style="padding:8px 10px;color:'+TX+';font-family:var(--mono);font-size:11px">'+s.am.toLocaleString()+'</td>';
+      html+='<td style="padding:8px 10px;color:'+TX+';font-family:var(--mono);font-size:11px">'+(s.pm||0)+'</td>';
+      html+='<td style="padding:8px 10px;color:'+TX+';font-family:var(--mono);font-size:11px">'+total.toLocaleString()+'</td>';
+      html+='<td style="padding:8px 10px">'+tag+'</td>';
+      html+='<td style="padding:8px 10px;color:'+MU+';font-size:11px">'+s.dist+'</td>';
+      html+='</tr>';
+    });
+
+    html+='</tbody></table>';
+    html+='</div>';
+  });
+
+  html+='<div style="margin:0 32px 32px;padding:16px 20px;background:rgba(34,211,238,0.04);border:1px solid rgba(34,211,238,0.12);border-radius:6px;display:flex;align-items:center;gap:12px">';
+  html+='<div style="font-size:10px;color:#7a8099;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.06em">Programme Contact</div>';
+  html+='<div style="font-size:12px;color:#e8eaf0">majd@dclngo.org</div>';
+  html+='</div>';
+  html+='</div>';
+  el.innerHTML = html;
+}
+
+renderKitchenExpansion();
+
+// ─── Shelters Tab ─────────────────────────────────────────────────────────────
+const SHELTERS_DATA = {
+  kitchens: [
+    {
+      name: 'TVET Zgharta', location: 'Zgharta, North Lebanon', coordinator: 'Douaa Ayoubi', color: '#a78bfa', serves_self: true,
+      shelters: [
+        {name:'TVET Zgharta (self)',name_en:'IDPs residing at the TVET facility itself',type:'self',district:'Zgharta',idps:367,families:98,cerd:null,focal:'Theresa Dahdah',phone:'70 674 474',mosa_staff:null}
+      ]
+    },
+    {
+      name: 'TVET Mina', location: 'Mina, Tripoli — North Lebanon', coordinator: 'Rasha Awad', color: '#22d3ee', serves_self: false,
+      shelters: [
+        {name:'\u0628\u0639\u0644 \u0645\u062d\u0633\u0646 \u0627\u0644\u0631\u0633\u0645\u064a\u0629 \u0627\u0644\u0645\u062e\u062a\u0644\u0637\u0629',name_en:'Baal Mohsen Mixed Public School',type:'school_shelter',district:'Tripoli',idps:150,families:37,cerd:1456,focal:'\u0645\u064a\u0631\u0641\u062a \u0623\u062d\u0645\u062f',phone:'03 127 162',mosa_staff:'Ahmad Suleiman'},
+        {name:'\u0627\u0628\u064a \u0641\u0631\u0627\u0633 \u0627\u0644\u062d\u0645\u062f\u0627\u0646\u064a \u0627\u0644\u0631\u0633\u0645\u064a\u0629 \u0627\u0644\u0645\u062e\u062a\u0644\u0637\u0629',name_en:'Abi Firas Al-Hamdani Mixed Public School',type:'school_shelter',district:'Tripoli',idps:61,families:14,cerd:null,focal:null,phone:'03 395 518',mosa_staff:'Mona Metwari'},
+        {name:'\u0641\u0631\u062d \u0627\u0646\u0637\u0648\u0646 \u0627\u0644\u0631\u0633\u0645\u064a\u0629 \u0644\u0644\u0628\u0646\u064a\u0646',name_en:'Farah Antoun Official School for Boys',type:'school_shelter',district:'Tripoli',idps:157,families:30,cerd:null,focal:null,phone:'76 130 629',mosa_staff:'Mohamad Hawli'},
+        {name:'Fatima Center',name_en:'',type:'syrian_site',district:'Tripoli',idps:80,families:11,cerd:null,focal:null,phone:null,mosa_staff:null},
+        {name:'Imama Hassan',name_en:'',type:'syrian_site',district:'Tripoli',idps:80,families:15,cerd:null,focal:null,phone:null,mosa_staff:null},
+        {name:'Al-Aleishi Family Warehouse',name_en:'',type:'syrian_site',district:'Tripoli',idps:155,families:29,cerd:null,focal:null,phone:null,mosa_staff:null},
+        {name:"Al Aleishi for Men's",name_en:'',type:'syrian_site',district:'Tripoli',idps:190,families:null,cerd:null,focal:null,phone:null,mosa_staff:null},
+        {name:'Hafez Deeb',name_en:'',type:'syrian_site',district:'Tripoli',idps:100,families:14,cerd:null,focal:null,phone:null,mosa_staff:null}
+      ]
+    }
+  ]
+};
+
+function renderShelters() {
+  var el = document.getElementById('shelters-content');
+  if (!el) return;
+  var TE='#22d3ee', PU='#a78bfa', MU='#7a8099', TX='#e8eaf0', AC='#4e9eff';
+  var card='background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:20px;';
+  var thS='font-family:var(--mono);font-size:10px;color:'+MU+';text-transform:uppercase;letter-spacing:0.06em;padding:6px 10px;text-align:left;font-weight:400';
+
+  var totalIDPs=0, totalFam=0, totalSites=0;
+  SHELTERS_DATA.kitchens.forEach(function(k){ k.shelters.forEach(function(s){ totalIDPs+=(s.idps||0); totalFam+=(s.families||0); totalSites++; }); });
+
+  var h='<div style="padding:32px">';
+  h+='<div style="font-family:var(--mono);font-size:11px;color:'+TE+';text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Community Kitchen Programme &#8212; IDP Shelters</div>';
+  h+='<div style="font-size:22px;font-weight:300;color:'+TX+';margin-bottom:6px">2 Community Kitchens &middot; '+totalSites+' Shelter Sites</div>';
+  h+='<div style="font-size:12px;color:'+MU+';margin-bottom:28px">Lebanese and Syrian IDPs served daily &middot; TVET Zgharta and TVET Mina</div>';
+
+  h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px">';
+  [{l:'Total IDPs served',v:totalIDPs.toLocaleString(),c:TE},{l:'Families',v:totalFam.toLocaleString(),c:TX},{l:'Shelter sites',v:totalSites,c:TX},{l:'Community kitchens',v:2,c:TX}].forEach(function(s){
+    h+='<div style="'+card+'"><div style="font-family:var(--mono);font-size:26px;font-weight:300;color:'+s.c+'">'+s.v+'</div><div style="font-size:11px;color:'+MU+';margin-top:4px">'+s.l+'</div></div>';
+  });
+  h+='</div>';
+
+  SHELTERS_DATA.kitchens.forEach(function(k){
+    var kC=k.color;
+    var kI=k.shelters.reduce(function(a,s){return a+(s.idps||0);},0);
+    var kF=k.shelters.reduce(function(a,s){return a+(s.families||0);},0);
+    var sc=k.shelters.filter(function(s){return s.type==='school_shelter';});
+    var sy=k.shelters.filter(function(s){return s.type==='syrian_site';});
+    var se=k.shelters.filter(function(s){return s.type==='self';});
+
+    h+='<div style="'+card+'margin-bottom:24px">';
+    h+='<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px">';
+    h+='<div>';
+    h+='<div style="font-family:var(--mono);font-size:10px;color:'+kC+';text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Community Kitchen</div>';
+    h+='<div style="font-size:18px;font-weight:400;color:'+TX+'">'+k.name+'</div>';
+    h+='<div style="font-size:12px;color:'+MU+';margin-top:2px">'+k.location+'</div>';
+    if(k.coordinator) h+='<div style="font-size:11px;color:'+TX+';margin-top:4px">DCL Kitchen Coordinator: <span style="color:'+kC+'">'+k.coordinator+'</span></div>';
+    if(k.serves_self) h+='<div style="margin-top:6px;font-size:11px;color:'+PU+'">Serves IDPs residing at the TVET facility itself</div>';
+    h+='</div>';
+    h+='<div style="text-align:right"><div style="font-family:var(--mono);font-size:24px;font-weight:300;color:'+kC+'">'+kI.toLocaleString()+'</div>';
+    h+='<div style="font-size:10px;color:'+MU+'">IDPs &middot; '+kF+' families</div></div>';
+    h+='</div>';
+
+    h+='<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">';
+    if(se.length) h+='<span style="font-family:var(--mono);font-size:10px;background:rgba(167,139,250,0.10);color:'+PU+';border:1px solid rgba(167,139,250,0.25);border-radius:3px;padding:3px 8px">'+se.length+' self-hosted</span>';
+    if(sc.length) h+='<span style="font-family:var(--mono);font-size:10px;background:rgba(78,158,255,0.10);color:'+AC+';border:1px solid rgba(78,158,255,0.25);border-radius:3px;padding:3px 8px">'+sc.length+' Lebanese IDPs (school shelters)</span>';
+    if(sy.length) h+='<span style="font-family:var(--mono);font-size:10px;background:rgba(34,211,238,0.10);color:'+TE+';border:1px solid rgba(34,211,238,0.25);border-radius:3px;padding:3px 8px">'+sy.length+' Syrian</span>';
+    h+='</div>';
+
+    h+='<table style="width:100%;border-collapse:collapse;font-size:12px">';
+    h+='<thead><tr style="border-bottom:1px solid rgba(255,255,255,0.07)">';
+    ['Shelter / Site','Beneficiary','District','IDPs','Families','CERD','Contact / MOSA Staff'].forEach(function(col){h+='<th style="'+thS+'">'+col+'</th>';});
+    h+='</tr></thead><tbody>';
+
+    k.shelters.forEach(function(s){
+      var tag='';
+      if(s.type==='self') tag='<span style="font-family:var(--mono);font-size:9px;background:rgba(167,139,250,0.10);color:'+PU+';border:1px solid rgba(167,139,250,0.25);border-radius:3px;padding:1px 5px">self-hosted</span>';
+      else if(s.type==='school_shelter') tag='<span style="font-family:var(--mono);font-size:9px;background:rgba(78,158,255,0.10);color:'+AC+';border:1px solid rgba(78,158,255,0.25);border-radius:3px;padding:1px 5px">Lebanese IDPs</span>';
+      else tag='<span style="font-family:var(--mono);font-size:9px;background:rgba(34,211,238,0.10);color:'+TE+';border:1px solid rgba(34,211,238,0.25);border-radius:3px;padding:1px 5px">Syrian</span>';
+
+      var nm=s.name;
+      if(s.name_en && s.name_en!=='') nm+='<div style="font-size:10px;color:'+MU+'">'+s.name_en+'</div>';
+
+      var ct='<span style="color:'+MU+'">&mdash;</span>';
+      if(s.focal||s.mosa_staff){
+        ct=(s.focal||s.mosa_staff);
+        if(s.phone) ct+='<div style="font-size:10px;color:'+MU+'">'+s.phone+'</div>';
+      }
+
+      h+='<tr style="border-bottom:1px solid rgba(255,255,255,0.04)">';
+      h+='<td style="padding:8px 10px;color:'+TX+'">'+nm+'</td>';
+      h+='<td style="padding:8px 10px">'+tag+'</td>';
+      h+='<td style="padding:8px 10px;color:'+MU+';font-size:11px">'+s.district+'</td>';
+      h+='<td style="padding:8px 10px;font-family:var(--mono);font-size:12px;color:'+TX+'">'+(s.idps||'&mdash;')+'</td>';
+      h+='<td style="padding:8px 10px;font-family:var(--mono);font-size:12px;color:'+MU+'">'+(s.families||'&mdash;')+'</td>';
+      h+='<td style="padding:8px 10px;font-family:var(--mono);font-size:11px;color:'+MU+'">'+(s.cerd||'&mdash;')+'</td>';
+      h+='<td style="padding:8px 10px;font-size:11px;color:'+TX+'">'+ct+'</td>';
+      h+='</tr>';
+    });
+    h+='</tbody></table></div>';
+  });
+
+  h+='<div style="padding:0 0 16px;font-size:11px;color:'+MU+';font-family:var(--mono)">Syrian IDP counts from CK Daily Report (April 2026). Lebanese IDP counts from IDP Emergency 2026 register.</div>';
+  h+='</div>';
+  el.innerHTML=h;
+}
+renderShelters();
+
+</script>
+</body>
+</html>
