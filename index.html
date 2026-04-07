@@ -2,8 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Snacks Re-Kickoff — DCL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>DCL Operations Dashboard</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DCL Ops">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f1117">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -399,6 +404,7 @@
   </div>
 </div>
 
+
 <div class="tab-content" id="tab-shelters">
   <div class="overview" id="shelters-content"></div>
   <div style="padding:0 32px 28px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#7a8099">
@@ -690,7 +696,6 @@ function openModal(s) {
         <div class="student-stat-label">Total</div>
       </div>
     </div>
-    ${s.starting_date ? `<div class="modal-field" style="margin-bottom:12px"><div class="modal-field-label">Starting date / notes</div><div class="modal-field-value" style="font-size:12px;color:var(--muted);line-height:1.5">${s.starting_date}</div></div>` : ''}
     ${(s.days_am || s.days_pm) ? `<div class="modal-field" style="margin-bottom:12px"><div class="modal-field-label">Operating days</div><div class="modal-field-value" style="font-size:12px;line-height:1.8">${s.days_am ? `<span style="color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-right:6px">AM</span><span style="font-family:var(--mono)">${s.days_am}</span>` : ''}${s.days_am && s.days_pm ? '<br>' : ''}${s.days_pm ? `<span style="color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-right:6px">PM</span><span style="font-family:var(--mono)">${s.days_pm}</span>` : ''}</div></div>` : ''}
     ${(s.allergy_forms || s.pest_control) ? `<div class="modal-field" style="margin-bottom:12px;display:flex;gap:24px"><div><div class="modal-field-label">Allergy forms</div><div class="modal-field-value" style="font-size:13px;color:${s.allergy_forms==='Yes'?'#2ecc8a':s.allergy_forms==='No'?'#ff5f5f':'#f5a623'}">${s.allergy_forms||'—'}</div></div><div><div class="modal-field-label">Pest control</div><div class="modal-field-value" style="font-size:13px;color:${s.pest_control==='Yes'?'#2ecc8a':s.pest_control==='No'?'#ff5f5f':'#f5a623'}">${s.pest_control||'—'}</div></div></div>` : ''}
     <div class="modal-field">
@@ -870,31 +875,79 @@ function renderOverview() {
     +'<span style="color:'+R+'">'+notAct+' not yet activated</span>.'
     +'</div>';
 
-  // Row 1: activation + student reach
+  // Row 1: activation (donut) + student reach (stacked bar)
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">';
 
-  html+='<div style="'+card+'">'
-    +'<div style="'+title+'">Activation status</div>'
-    +prog(actPct,G)
-    +'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:'+MU+';margin-bottom:14px"><span>'+actPct+'% activated</span><span>of '+DATA.filter(function(s){return !s.is_non_school;}).length+' schools</span></div>'
-    +statrow('<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+G+';margin-right:6px"></span>Activated (Y)',activated,G)
-    +statrow('<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+R+';margin-right:6px"></span>Not activated (N)',notAct,R,true)
-    +'</div>';
+  // Activation donut
+  (function(){
+    var schoolCount=DATA.filter(function(s){return !s.is_non_school;}).length;
+    var r=52,cx=70,cy=70,circ=2*Math.PI*r;
+    function arc(pct,col,off){
+      var dash=circ*pct/100;
+      return '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="14" stroke-dasharray="'+dash+' '+circ+'" stroke-dashoffset="'+(-off*circ/100)+'" stroke-linecap="butt" transform="rotate(-90 '+cx+' '+cy+')" />';
+    }
+    var notActPct=p(notAct,schoolCount);
+    var svg='<svg width="140" height="140" style="flex-shrink:0">'
+      +'<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="14"/>'
+      +arc(actPct,G,0)
+      +arc(notActPct,R,actPct)
+      +'<text x="'+cx+'" y="'+(cy-8)+'" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="22" font-weight="300" fill="#e8eaf0">'+actPct+'%</text>'
+      +'<text x="'+cx+'" y="'+(cy+12)+'" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" fill="#7a8099">ACTIVATED</text>'
+      +'</svg>';
+    html+='<div style="'+card+'">'
+      +'<div style="'+title+'">Activation status</div>'
+      +'<div style="display:flex;align-items:center;gap:20px">'
+      +svg
+      +'<div style="flex:1">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">'
+      +'<div style="width:10px;height:10px;border-radius:50%;background:'+G+';flex-shrink:0"></div>'
+      +'<div style="font-size:12px;color:#e8eaf0">Activated</div>'
+      +'<div style="font-family:var(--mono);font-size:14px;color:'+G+';margin-left:auto">'+activated+'</div>'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">'
+      +'<div style="width:10px;height:10px;border-radius:50%;background:'+R+';flex-shrink:0"></div>'
+      +'<div style="font-size:12px;color:#e8eaf0">Not activated</div>'
+      +'<div style="font-family:var(--mono);font-size:14px;color:'+R+';margin-left:auto">'+notAct+'</div>'
+      +'</div>'
+      +'<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07);font-family:var(--mono);font-size:10px;color:#7a8099">of '+schoolCount+' schools total</div>'
+      +'</div></div>'
+      +'</div>';
+  })();
 
-  html+='<div style="'+card+'">'
-    +'<div style="'+title+'">Student reach</div>'
-    +'<div style="font-family:var(--mono);font-size:28px;font-weight:300;color:'+G+'">'+(amAct+pmAct).toLocaleString()+'</div>'
-    +'<div style="font-size:10px;color:'+MU+';text-transform:uppercase;letter-spacing:.06em;margin:4px 0 12px">Total students in active schools</div>'
-    +prog(p(amAct+pmAct,amTot+pmTot),G)
-    +'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:'+MU+';margin-bottom:14px"><span>'+p(amAct+pmAct,amTot+pmTot)+'% of enrolled</span><span>'+(amTot+pmTot).toLocaleString()+' total</span></div>'
-    +statrow('Total AM enrolled',amTot.toLocaleString())
-    +statrow('Total PM enrolled',pmTot.toLocaleString())
-    +statrow('Not yet reached (AM)',(amTot-amAct).toLocaleString(),R)
-    +statrow('Not yet reached (PM)',(pmTot-pmAct).toLocaleString(),R,true)
-    +'</div>';
+  // Student reach stacked bar
+  (function(){
+    var total2=amTot+pmTot, reached=amAct+pmAct;
+    var yetAM=amTot-amAct, yetPM=pmTot-pmAct;
+    var reachPct=p(reached,total2);
+    var amActPct=p(amAct,total2), pmActPct=p(pmAct,total2);
+    var yetAMpct=p(yetAM,total2), yetPMpct=p(yetPM,total2);
+    html+='<div style="'+card+'">'
+      +'<div style="'+title+'">Student reach</div>'
+      +'<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">'
+      +'<div style="font-family:var(--mono);font-size:28px;font-weight:300;color:'+G+'">'+reached.toLocaleString()+'</div>'
+      +'<div style="font-size:10px;color:'+MU+'">of '+total2.toLocaleString()+' enrolled</div>'
+      +'</div>'
+      +'<div style="font-size:10px;color:'+MU+';text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px">'+reachPct+'% reached</div>'
+      +'<div style="height:28px;border-radius:4px;overflow:hidden;display:flex;margin-bottom:8px">'
+      +'<div style="width:'+amActPct+'%;background:'+G+';opacity:.9" title="AM reached: '+amAct.toLocaleString()+'"></div>'
+      +'<div style="width:'+pmActPct+'%;background:#22d3ee;opacity:.9" title="PM reached: '+pmAct.toLocaleString()+'"></div>'
+      +'<div style="width:'+yetAMpct+'%;background:'+R+';opacity:.4" title="AM not reached: '+yetAM.toLocaleString()+'"></div>'
+      +'<div style="flex:1;background:rgba(255,95,95,0.15)" title="PM not reached: '+yetPM.toLocaleString()+'"></div>'
+      +'</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;font-family:var(--mono);font-size:10px">'
+      +'<span style="color:'+G+'">&#9632; AM reached '+amAct.toLocaleString()+'</span>'
+      +'<span style="color:#22d3ee">&#9632; PM reached '+pmAct.toLocaleString()+'</span>'
+      +'<span style="color:'+R+';opacity:.7">&#9632; AM gap '+yetAM.toLocaleString()+'</span>'
+      +'<span style="color:rgba(255,95,95,0.5)">&#9632; PM gap '+yetPM.toLocaleString()+'</span>'
+      +'</div>'
+      +statrow('Total AM enrolled',amTot.toLocaleString())
+      +statrow('Total PM enrolled',pmTot.toLocaleString())
+      +statrow('Not yet reached (AM)',yetAM.toLocaleString(),R)
+      +statrow('Not yet reached (PM)',yetPM.toLocaleString(),R,true)
+      +'</div>';
+  })();
 
   html+='</div>';
-
   // Row 2: hosting + affiliation/program
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">';
 
@@ -922,27 +975,63 @@ function renderOverview() {
     {label:'Unknown / TBD',val:DATA.filter(function(s){return ['Snack','Kitchen (Nearby)','Kitchen (Central)'].indexOf(s.original)<0;}).length,valCur:null,col:MU},
   ];
 
-  var rightCol='<div style="display:flex;flex-direction:column;gap:16px">';
-  rightCol+='<div style="'+card+'">'
-    +'<div style="'+title+'">WFP affiliation</div>';
-  affRows.forEach(function(r){
-    rightCol+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">'
-      +'<div style="width:120px;flex-shrink:0;font-size:11px;color:'+MU+'">'+r.label+'</div>'
-      +minibar(r.val,total,r.col)
-      +(function(){var idx=_filters.push(r.f||{})-1;return '<div style="font-family:var(--mono);font-size:11px;color:'+TX+';min-width:24px;text-align:right;cursor:pointer;border-bottom:1px dashed rgba(255,255,255,0.25)" onclick="goToSchools('+idx+')" title="View in Schools tab">'+r.val+'</div></div>';})();
-  });
-  rightCol+='</div>';
-
-  rightCol+='<div style="'+card+'">'
-    +'<div style="'+title+'">Program type</div>';
-  progRows.forEach(function(r){
-    var curStr=(r.valCur!==null&&r.valCur!==undefined)?'<div style="font-size:9px;color:'+MU+';margin-top:1px">→ '+r.valCur+' current</div>':'';
-    rightCol+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">'
-      +'<div style="width:120px;flex-shrink:0;font-size:11px;color:'+MU+'">'+r.label+curStr+'</div>'
-      +minibar(r.val,total,r.col)
-      +'<div style="font-family:var(--mono);font-size:11px;color:'+TX+';min-width:24px;text-align:right">'+r.val+'</div></div>';
-  });
-  rightCol+='</div></div>';
+  var rightCol=(function(){
+    // Donut helper: larger, percentage in center, all 3 segments
+    var r3=48, cx3=60, cy3=60, circ3=2*Math.PI*r3;
+    function arc3(pct,col,offset){
+      if(pct<=0) return '';
+      var dash=circ3*(pct/100);
+      var gap=circ3-dash;
+      return '<circle cx="'+cx3+'" cy="'+cy3+'" r="'+r3+'" fill="none" stroke="'+col+'" stroke-width="12" stroke-dasharray="'+dash+' '+gap+'" stroke-dashoffset="'+(-(offset/100)*circ3)+'" stroke-linecap="butt" transform="rotate(-90 '+cx3+' '+cy3+')" />';
+    }
+    // WFP donut: WFP / Not WFP / Out of program — use total as base
+    var wfpTot=DATA.filter(function(s){return !s.is_non_school;}).length;
+    var wfpPctA=p(wfpN,wfpTot), notwfpPctA=p(notwfpN,wfpTot), notjoinPctA=p(notjoinN,wfpTot);
+    var wfpPctLbl=Math.round(wfpN/wfpTot*100);
+    var svg1='<svg width="120" height="120" style="display:block;margin:0 auto">'
+      +'<circle cx="'+cx3+'" cy="'+cy3+'" r="'+r3+'" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="12"/>'
+      +arc3(wfpPctA,AC,0)
+      +arc3(notwfpPctA,PU,wfpPctA)
+      +arc3(notjoinPctA,R,wfpPctA+notwfpPctA)
+      +'<text x="'+cx3+'" y="'+(cy3-7)+'" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="18" font-weight="300" fill="#e8eaf0">'+wfpPctLbl+'%</text>'
+      +'<text x="'+cx3+'" y="'+(cy3+11)+'" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#9aa0b4">WFP</text>'
+      +'</svg>';
+    // Program donut: Snacks / Kitchens / Unknown
+    var snackN=DATA.filter(function(s){return s.original==='Snack';}).length;
+    var kitOrigN=DATA.filter(function(s){return s.original==='Kitchen (Nearby)'||s.original==='Kitchen (Central)';}).length;
+    var unknN=wfpTot-snackN-kitOrigN;
+    var snackPctA=p(snackN,wfpTot), kitPctA=p(kitOrigN,wfpTot), unknPctA=p(unknN,wfpTot);
+    var snackPctLbl=Math.round(snackN/wfpTot*100);
+    var svg2='<svg width="120" height="120" style="display:block;margin:0 auto">'
+      +'<circle cx="'+cx3+'" cy="'+cy3+'" r="'+r3+'" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="12"/>'
+      +arc3(snackPctA,'#2ecc8a',0)
+      +arc3(kitPctA,'#f5a623',snackPctA)
+      +arc3(unknPctA,'#7a8099',snackPctA+kitPctA)
+      +'<text x="'+cx3+'" y="'+(cy3-7)+'" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="18" font-weight="300" fill="#e8eaf0">'+snackPctLbl+'%</text>'
+      +'<text x="'+cx3+'" y="'+(cy3+11)+'" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#9aa0b4">SNACKS</text>'
+      +'</svg>';
+    return '<div style="display:flex;flex-direction:column;gap:16px">'
+      +'<div style="'+card+'">'
+      +'<div style="'+title+'">WFP affiliation &amp; program type</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">'
+      // Left: WFP donut
+      +'<div>'
+      +svg1
+      +'<div style="margin-top:10px;font-family:var(--mono);font-size:10px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span style="color:'+AC+'">&#9632; WFP</span><span style="color:#e8eaf0">'+wfpN+'</span></div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span style="color:'+PU+'">&#9632; Not WFP</span><span style="color:#e8eaf0">'+notwfpN+'</span></div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center"><span style="color:'+R+'">&#9632; Out of program</span><span style="color:#e8eaf0">'+notjoinN+'</span></div>'
+      +'</div></div>'
+      // Right: Program type donut
+      +'<div>'
+      +svg2
+      +'<div style="margin-top:10px;font-family:var(--mono);font-size:10px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span style="color:#2ecc8a">&#9632; Snacks</span><span style="color:#e8eaf0">'+snackN+'</span></div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span style="color:#f5a623">&#9632; Kitchens</span><span style="color:#e8eaf0">'+kitOrigN+'</span></div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center"><span style="color:#7a8099">&#9632; Unknown</span><span style="color:#e8eaf0">'+unknN+'</span></div>'
+      +'</div></div>'
+      +'</div></div></div>';
+  })();
   html+=rightCol;
   html+='</div>';
 
@@ -1007,60 +1096,13 @@ function renderOverview() {
   });
   html+='</div></div>';
 
-  // Kitchen Expansion overview card
-  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px;margin-bottom:16px">';
-  html+='<div style="'+card+'">';
-  html+='<div style="'+title+'">Kitchen Expansion</div>';
-  html+='<div style="font-family:var(--mono);font-size:24px;font-weight:300;color:#22d3ee">5,040</div>';
-  html+='<div style="font-size:10px;color:'+MU+';text-transform:uppercase;letter-spacing:.06em;margin:4px 0 14px">additional students · 2 central kitchens</div>';
-  [
-    {label:'Ibn Khaldoun (Tripoli)',val:'778 students',sub:'8 nearby schools · 6 new'},
-    {label:'Tal Abbas (Akkar)',val:'535 students',sub:'5 nearby schools · 3 new'},
-  ].forEach(function(r){
-    html+='<div style="margin-bottom:10px">';
-    html+='<div style="font-size:11px;color:'+TX+';font-weight:500">'+r.label+'</div>';
-    html+='<div style="font-family:var(--mono);font-size:11px;color:#22d3ee">'+r.val+'</div>';
-    html+='<div style="font-size:10px;color:'+MU+'">'+r.sub+'</div>';
-    html+='</div>';
-  });
-  html+='<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07)">';
-  html+=statrow('New schools added',9,'#22d3ee');
-  html+=statrow('Already in snacks',4,MU,true);
-  html+='</div>';
-  html+='</div>';
-  html+='<div style="'+card+'">';
-  html+='<div style="'+title+'">New students breakdown</div>';
-  html+='<div style="font-size:10px;color:'+MU+';text-transform:uppercase;letter-spacing:.06em;margin:0 0 12px">Central kitchens only count new activity</div>';
-  [
-    {label:'Ibn Khaldoun — central',val:778,isNew:true},
-    {label:'Nearby — new schools',val:2150,isNew:true},
-    {label:'Nearby — ex-snack schools',val:782,isNew:false},
-    {label:'Tal Abbas — central',val:535,isNew:true},
-    {label:'Nearby — new schools',val:1577,isNew:true},
-    {label:'Nearby — ex-snack schools',val:1407,isNew:false},
-  ].forEach(function(r){
-    html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">';
-    html+='<div style="width:160px;flex-shrink:0;font-size:10px;color:'+MU+'">'+r.label+'</div>';
-    html+=minibar(r.val,3727,r.isNew?'#22d3ee':MU);
-    html+='<div style="font-family:var(--mono);font-size:11px;color:'+(r.isNew?'#22d3ee':MU)+';min-width:36px;text-align:right">'+r.val.toLocaleString()+'</div>';
-    html+='</div>';
-  });
-  html+='</div>';
-  html+='</div>';
-
   el.innerHTML=html;
 }
 renderOverview();
 
 function setLastUpdated() {
-  var now = new Date();
-  var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  var d = days[now.getDay()]+' '+now.getDate()+' '+months[now.getMonth()]+' '+now.getFullYear();
-  var h = now.getHours().toString().padStart(2,'0');
-  var m = now.getMinutes().toString().padStart(2,'0');
   var el = document.getElementById('last-updated-time');
-  if (el) el.textContent = d+' · '+h+':'+m;
+  if (el) el.textContent = 'Tuesday 07 Apr 2026 · 19:54';
 }
 setLastUpdated();
 
@@ -1237,11 +1279,15 @@ function selectShelterDate(d) {
   if (el) { el.dataset.selectedDate = d; renderShelterSnacks(); }
 }
 
+
 function renderKitchenExpansion() {
   var el = document.getElementById('ke-content');
   var TE='#22d3ee', MU='#7a8099', TX='#e8eaf0', G='#2ecc8a', AM='#f5a623', R='#ff5f5f';
   var card='background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:20px;';
   var title='font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:'+MU+';margin-bottom:14px;';
+  var SU='#181c27', BO='rgba(255,255,255,0.07)';
+  function statrow(label,val,col,last){return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;'+(last?'':'border-bottom:1px solid '+BO)+'"><span style="font-size:12px;color:'+MU+'">'+label+'</span><span style="font-family:var(--mono);font-size:13px;color:'+(col||TX)+'">'+val+'</span></div>';}
+  function minibar(val,tot,col){var pct=tot>0?Math.round(val/tot*100):0;return '<div style="flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:3px"></div></div>';}
 
   var html='<div style="padding:32px">';
   html+='<div style="font-family:var(--mono);font-size:11px;color:'+TE+';text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Kitchen Expansion Programme</div>';
@@ -1313,10 +1359,48 @@ function renderKitchenExpansion() {
     html+='</div>';
   });
 
-  html+='<div style="margin:0 32px 32px;padding:16px 20px;background:rgba(34,211,238,0.04);border:1px solid rgba(34,211,238,0.12);border-radius:6px;display:flex;align-items:center;gap:12px">';
-  html+='<div style="font-size:10px;color:#7a8099;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.06em">Programme Contact</div>';
-  html+='<div style="font-size:12px;color:#e8eaf0">majd@dclngo.org</div>';
+  // Kitchen Expansion overview cards
+  html+='<div style="padding:0 32px 32px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:0">';
+  html+='<div style="'+card+'">';
+  html+='<div style="'+title+'">Kitchen Expansion</div>';
+  html+='<div style="font-family:var(--mono);font-size:24px;font-weight:300;color:#22d3ee">5,040</div>';
+  html+='<div style="font-size:10px;color:'+MU+';text-transform:uppercase;letter-spacing:.06em;margin:4px 0 14px">additional students · 2 central kitchens</div>';
+  [
+    {label:'Ibn Khaldoun (Tripoli)',val:'778 students',sub:'8 nearby schools · 6 new'},
+    {label:'Tal Abbas (Akkar)',val:'535 students',sub:'5 nearby schools · 3 new'},
+  ].forEach(function(r){
+    html+='<div style="margin-bottom:10px">';
+    html+='<div style="font-size:11px;color:'+TX+';font-weight:500">'+r.label+'</div>';
+    html+='<div style="font-family:var(--mono);font-size:11px;color:#22d3ee">'+r.val+'</div>';
+    html+='<div style="font-size:10px;color:'+MU+'">'+r.sub+'</div>';
+    html+='</div>';
+  });
+  html+='<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07)">';
+  html+=statrow('New schools added',9,'#22d3ee');
+  html+=statrow('Already in snacks',4,MU,true);
   html+='</div>';
+  html+='</div>';
+  html+='<div style="'+card+'">';
+  html+='<div style="'+title+'">New students breakdown</div>';
+  html+='<div style="font-size:10px;color:'+MU+';text-transform:uppercase;letter-spacing:.06em;margin:0 0 12px">Central kitchens only count new activity</div>';
+  [
+    {label:'Ibn Khaldoun — central',val:778,isNew:true},
+    {label:'Nearby — new schools',val:2150,isNew:true},
+    {label:'Nearby — ex-snack schools',val:782,isNew:false},
+    {label:'Tal Abbas — central',val:535,isNew:true},
+    {label:'Nearby — new schools',val:1577,isNew:true},
+    {label:'Nearby — ex-snack schools',val:1407,isNew:false},
+  ].forEach(function(r){
+    html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">';
+    html+='<div style="width:160px;flex-shrink:0;font-size:10px;color:'+MU+'">'+r.label+'</div>';
+    html+=minibar(r.val,3727,r.isNew?'#22d3ee':MU);
+    html+='<div style="font-family:var(--mono);font-size:11px;color:'+(r.isNew?'#22d3ee':MU)+';min-width:36px;text-align:right">'+r.val.toLocaleString()+'</div>';
+    html+='</div>';
+  });
+  html+='</div>';
+  html+='</div>';
+
+  html+='</div>';  // close padding wrapper
   html+='</div>';
   el.innerHTML = html;
 }
